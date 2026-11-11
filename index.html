@@ -249,13 +249,13 @@ function render(){if(!code||!room.st||!room.cfg||!room.players)return;
  if(role!=="tv"&&!room.players[me.uid])return leave("Ya no estás en la sala.");
  const a=$("#ans"),av=a?a.value:"",af=a&&document.activeElement===a,st=room.st,tv=role==="tv";
  const V={lobby:lobbyV,pick:pickV,intro:introV,round:roundV,reveal:revealV,gend:gendV,end:endV}[st.ph];
- let h=top()+(V?V(st,tv):`<div class="box center">Preparando…</div>`);
+ let h=topBar()+(V?V(st,tv):`<div class="box center">Preparando…</div>`);
  if(!tv&&amCtrl()&&["pick","intro","round","reveal","gend"].includes(st.ph))h+=ctrlBar(st);
  app.innerHTML=h;
  const b=$("#ans");if(b){b.value=av;if(af)b.focus()}
  if($("#qr"))qr(BASE+"?sala="+code,tv?320:200);
  clocks()}
-function top(){const p=(room.players||{})[me.uid];return `<div class="row" style="justify-content:space-between"><b>Sala ${code}</b><span class="row">${p?esc(p.n):"Pantalla"} ${p&&team()&&p.t>=0?tdot(p.t)+tname(p.t):""}</span></div>`}
+function topBar(){const p=(room.players||{})[me.uid];return `<div class="row" style="justify-content:space-between"><b>Sala ${code}</b><span class="row">${p?esc(p.n):"Pantalla"} ${p&&team()&&p.t>=0?tdot(p.t)+tname(p.t):""}</span></div>`}
 function plist(kick){const T=team();return `<ul class="list">${ps().map(p=>`<li>${T?tdot(p.t):""}<span class="n">${esc(p.n)}${p.u===room.host?" ⭐":""}${onl(p.u)?"":' <span class="muted">(desconectado)</span>'}</span>${kick&&p.u!==me.uid?`<button data-a="kick" data-v="${p.u}" aria-label="Expulsar">✕</button>`:""}</li>`).join("")}</ul>`}
 function lobbyV(st,tv){const c=room.cfg,H=isHost()&&!tv,T=team();
  let h=`<div class="box center"><h2>Únete escaneando el código</h2><div id="qr"></div><div class="big">${code}</div><div class="muted">${esc(BASE)}?sala=${code}</div></div>`;
