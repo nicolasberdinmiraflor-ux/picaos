@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Picaos</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23140f24'/><text x='50' y='72' font-size='64' text-anchor='middle'>⚡</text></svg>">
+<style>
+:root{--bg:#140f24;--panel:#211936;--line:#3a2f5a;--fg:#f4effc;--muted:#a99cc8;--accent:#ffcf3f;--ok:#3fdc8f;--bad:#ff5d73;color-scheme:dark}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;background-image:radial-gradient(ellipse 70% 45% at 50% 0%,#3b2a6b 0%,transparent 70%);background-attachment:fixed;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right)) 24px max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:14px}
+body.tv .wrap{max-width:1200px;font-size:1.4em}
+h1{margin:0;text-align:center;color:var(--accent);font-size:1.8em}h2{margin:0;font-size:1.15em}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.center{text-align:center;align-items:center}.muted{color:var(--muted)}
+input,select{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;min-width:0}
+input[type=text]{flex:1}input[type=number]{width:68px;text-align:center}input[type=checkbox]{width:22px;height:22px}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:10px 14px;background:var(--line);color:var(--fg);cursor:pointer}
+button.pri{background:var(--accent);color:#1a1230}button.ok{background:var(--ok);color:#06281a}button.bad{background:var(--bad);color:#2e0710}
+button.on{outline:3px solid var(--accent);outline-offset:2px}
+.big{font-size:clamp(1.8rem,9vw,3.6rem);font-weight:900;text-align:center;letter-spacing:.04em;overflow-wrap:anywhere;line-height:1.1}
+body.tv .big{font-size:5.5rem}
+.stage{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+.clk{--p:1;width:84px;height:84px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*360deg),var(--line) 0);display:grid;place-items:center;flex:none}
+.clk b{width:68px;height:68px;border-radius:50%;background:var(--panel);display:grid;place-items:center;font-size:1.8rem}
+.clk.low{background:conic-gradient(var(--bad) calc(var(--p)*360deg),var(--line) 0)}.clk.low b{color:var(--bad)}
+body.tv .clk{width:170px;height:170px}body.tv .clk b{width:140px;height:140px;font-size:3.6rem}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.list li{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--bg);flex-wrap:wrap}
+.list .n{flex:1;overflow-wrap:anywhere;min-width:100px}.list .p{font-weight:900;color:var(--accent);font-size:1.2em}
+.dot{width:12px;height:12px;border-radius:50%;flex:none;display:inline-block}
+.ctrl{position:sticky;bottom:8px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;box-shadow:0 6px 20px #0008}
+.ctrl button{padding:8px 10px;font-size:.9em}
+#qr{background:#fff;padding:10px;border-radius:12px;align-self:center}#qr img,#qr canvas{display:block}
+a{color:var(--accent)}
+.logo{display:flex;flex-direction:column;align-items:center;text-align:center;padding:30px 0 10px;background:radial-gradient(ellipse 80% 70% at 50% 0%,#4b3590 0%,transparent 70%)}
+.lt{font-family:Bungee,"Arial Black",Impact,sans-serif;font-size:clamp(3rem,16vw,4.6rem);line-height:1;color:var(--accent);text-shadow:0 0 30px #ffcf3f66}
+.lr{font-size:3.2rem;line-height:1.2;filter:drop-shadow(0 0 14px #ffcf3faa)}
+.ll{color:#d9cff2;font-size:1.1em;font-weight:600}
+.li{font-size:1.8rem;margin-top:22px;letter-spacing:.3em}
+body.tv .lt{font-size:8rem}
+.lt{display:inline-block;animation:lt 2.4s ease-in-out infinite}
+.lr{display:inline-block;animation:lr 2.4s ease-in-out infinite}
+@keyframes lt{0%,100%{transform:scale(1);text-shadow:0 0 20px #ffcf3f55}45%{transform:scale(1.06) rotate(-2deg);text-shadow:0 0 45px #ffcf3fcc}50%{transform:scale(1.04) rotate(1deg)}}
+@keyframes lr{0%,38%,100%{transform:translateY(0) scale(1);opacity:.85;filter:drop-shadow(0 0 10px #ffcf3f88)}42%{transform:translateY(-6px) scale(1.35) rotate(-10deg);opacity:1;filter:drop-shadow(0 0 30px #fff) brightness(1.6)}46%{transform:scale(.9) rotate(8deg);opacity:.5}50%{transform:scale(1.25) rotate(-4deg);opacity:1;filter:drop-shadow(0 0 25px #ffcf3f)}60%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.lt,.lr{animation:none}}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&display=swap"></head>
+<body><div id="app" class="wrap"><div class="logo"><div class="lt">PICAOS</div><div class="lr">⚡</div><div class="ll">Aquí se viene a ganar</div><div class="li">🔤 🎤 ➗ 🎨 🕵️ ❓</div></div><p class="center muted">Conectando…</p></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// ===== PEGA AQUÍ LA CONFIGURACIÓN DE TU PROYECTO FIREBASE =====
+const FB={apiKey:"AIzaSyCKhILrdoDDRPl7Al79950r0qi5RlnBwuY",authDomain:"picaos-5ca4a.firebaseapp.com",databaseURL:"https://picaos-5ca4a-default-rtdb.europe-west1.firebasedatabase.app",projectId:"picaos-5ca4a",storageBucket:"picaos-5ca4a.firebasestorage.app",messagingSenderId:"195529955739",appId:"1:195529955739:web:5415e01d6a89d7001ee93e"};
+// ===============================================================
+
+const uniq=s=>[...new Set(s.trim().split(/\s+/))];
+const PAL=uniq(`casa perro gato mesa silla ventana puerta cocina jardín escuela libro lápiz papel tijeras camisa zapato pantalón sombrero bufanda guante reloj espejo almohada sábana manta cortina alfombra lámpara nevera horno sartén cuchara tenedor cuchillo plato vaso botella taza tetera cafetera tostadora lavadora secadora escoba fregona cubo bolsa maleta mochila cartera paraguas llavero bicicleta coche autobús camión tren barco avión cohete moto patinete tractor ambulancia bombero policía médico enfermera maestro alumno cartero panadero carnicero pescador granjero pintor escritor cantante bailarín fútbol baloncesto tenis natación carrera pelota raqueta portería estadio piscina playa montaña bosque desierto selva isla volcán río lago océano cascada pradera colina valle cueva arena piedra roca tierra barro nieve hielo lluvia trueno relámpago nube viento tormenta arcoíris estrella planeta galaxia cometa satélite luna sol cielo amanecer atardecer noche mañana tarde semana domingo lunes martes miércoles jueves viernes sábado enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre verano invierno otoño primavera manzana plátano naranja fresa cereza sandía melón pera uva limón piña mango kiwi tomate patata cebolla zanahoria lechuga pepino pimiento calabaza garbanzo lenteja arroz pan queso leche huevo jamón chorizo pollo ternera cordero pescado gamba mejillón calamar pulpo atún salmón sardina tortilla paella gazpacho croqueta empanada bocadillo galleta pastel tarta helado chocolate caramelo azúcar sal pimienta aceite vinagre mostaza harina miel mermelada yogur zumo agua refresco elefante jirafa león tigre cebra mono oso lobo zorro conejo ardilla ratón caballo vaca oveja cabra cerdo gallina pato pavo paloma águila búho loro pingüino delfín ballena tiburón tortuga serpiente lagarto cocodrilo rana mariposa abeja hormiga araña mosca mosquito caracol camello canguro koala hipopótamo rinoceronte murciélago medusa gusano cabeza cara ojo nariz boca oreja diente lengua cuello hombro brazo codo muñeca mano dedo uña pecho espalda barriga cintura pierna rodilla tobillo pie talón corazón pulmón cerebro hueso sangre piel cabello abuelo abuela padre madre hermano hermana primo prima tío tía sobrino nieto bebé vecino amigo novio esposa teléfono ordenador teclado pantalla impresora cámara televisión radio altavoz auricular cable enchufe batería cargador bombilla linterna martillo destornillador clavo tornillo sierra taladro escalera cuerda cadena candado llave buzón sobre sello postal carta periódico revista diccionario cuaderno pizarra tiza borrador regla compás calculadora mapa globo bandera ciudad pueblo calle plaza parque iglesia castillo palacio museo teatro cine biblioteca hospital farmacia mercado tienda supermercado banco oficina fábrica aeropuerto estación puerto puente túnel carretera autopista rotonda semáforo acera esquina barrio edificio rascacielos torre faro granja huerto molino vestido falda chaqueta abrigo jersey camiseta calcetín bota sandalia zapatilla corbata cinturón pañuelo gorra anillo collar pulsera pendiente gafas guitarra piano violín tambor trompeta flauta canción concierto orquesta disco fiesta cumpleaños regalo vela juguete muñeco puzle dominó ajedrez baraja dado amor alegría tristeza miedo sorpresa verdad mentira sueño suerte tiempo silencio ruido música idea pregunta respuesta secreto aventura viaje vacaciones trabajo dinero precio árbol flor rosa margarita girasol tulipán hoja rama raíz semilla hierba césped seta pino roble palmera cactus rojo azul verde amarillo morado blanco negro gris marrón dorado plateado abogado arquitecto ingeniero cocinero camarero peluquero fontanero electricista mecánico piloto soldado astronauta detective juez actor periodista fotógrafo científico rueda volante motor freno asiento maletero gasolina billete equipaje pasaporte olla cazo bandeja servilleta mantel jarra embudo colador rallador batidora microondas fregadero grifo`);
+const CES=uniq(`amor corazón noche luna sol mar cielo fuego lluvia beso baila vida tiempo mujer niña loco loca fiesta playa calle ciudad estrella sueño volar libre dinero coche casa madre padre amigo guapa bonita llorar reír cantar música guitarra rey reina tequila fuerte siempre nunca mañana ayer verano invierno flor rosa rojo negro azul blanco verde viento agua tierra camino tren barco avión ojos boca manos piel alma dios ángel diablo cerveza vino café perro gato pájaro caballo toro adiós hola vuelve olvidar recuerdo bailando pueblo besos labios cintura mirada sonrisa lágrima dolor herida perdón mentira verdad secreto destino suerte cariño querer quiero volver soledad silencio canción bailar cumbia salsa rumba flamenco gitana morena rubia princesa caballero bandido pirata marinero barca puerto orilla arena olas sirena tormenta trueno primavera otoño abril mayo septiembre domingo sábado viernes lunes medianoche madrugada amanecer luz sombra oscuridad estrellas lucero paloma golondrina clavel jazmín amapola campo río montaña carretera maleta estación despedida regreso hogar ventana balcón puerta llave llama ceniza hielo frío calor sed hambre pan copa botella brindis feliz alegría tristeza locura pasión deseo celos traición guerra paz bandera libertad cárcel ladrón policía oro plata diamante corona niño chico chica novia novio boda iglesia anillo infierno demonio milagro santa virgen abuela hermano familia amigos vecina barrio esquina bar discoteca baile ritmo tambor piano trompeta voz grito teléfono carta mensaje foto olvido pasado futuro hoy ahora jamás contigo conmigo juntos solo sola lejos cerca alas mariposa jardín naranja limón manzana fresa chocolate azúcar miel caramelo veneno doctor sangre lágrimas sueños dormir despertar cama abrazo caricia pelo cuerpo nube nieve arcoíris desierto selva isla vaquero moto bicicleta radio televisión cine película escuela maestra libro poema vestido zapatos sombrero gafas ropa reloj espejo minuto segundo hora día semana mes año cumpleaños velas regalo navidad verbena feria gallo`);
+const CEN=uniq(`love heart night moon sun sea sky fire rain kiss dance life time girl boy baby crazy party beach street city star dream fly free money car home mother father friend beautiful cry smile sing music guitar king queen forever never tomorrow yesterday summer winter flower rose red black blue white green wind water world road train boat airplane eyes lips hands soul god angel devil wine whiskey coffee dog bird horse lonely goodbye hello back remember tonight together alone happy sad fight heaven hell gold diamond rock roll honey sweet sugar candy touch hold broken tears always sleep wake day morning light dark shadow burn ice cold hot spring autumn storm thunder lightning stars ocean river mountain highway town country house door window wall bridge truck plane ship dollar rich poor prince princess crown hero ghost pray church bell wedding ring dress shoes jeans hat jacket mirror photo picture radio phone call letter song rhythm beat drum piano voice scream whisper secret lie truth trust promise war peace freedom rebel run walk jump fall rise high low fast slow young old wild mad fool liar lover enemy brother sister mama daddy woman man people death die live alive breathe mind blood bones skin face laugh yellow purple pink flowers garden tree leaves paradise magic wish hope faith believe miracle desire fever heat sunshine moonlight midnight sunrise sunset weekend friday saturday sunday monday december july video movie camera stage show crowd lights neon champagne bottle glass smoke dust desert island waves sand shore sailor pirate cowboy gun bullet arrow sword castle tower kingdom throne knight dragon monster vampire wolf tiger lion snake butterfly bee cat kitten`);
+
+const GAMES={
+ huecos:{n:"Palabra con huecos",k:"speed",secs:30,rules:"Escribe la palabra completa. Gana el primero que acierte."},
+ anagrama:{n:"Anagrama",k:"speed",secs:40,rules:"Ordena las letras y escribe la palabra. Gana el primero que acierte."},
+ calculo:{n:"Cálculo rápido",k:"speed",secs:20,rules:"Resuelve la operación. Gana el primero que acierte."},
+ canta:{n:"Canta la palabra",k:"turn",secs:30,rules:"La palabra se ve 5 segundos. Después hay que cantar una canción que la lleve antes de que acabe el tiempo. El anfitrión decide si vale."}
+};
+const TEAMS=[["Rojo","#ff5d73"],["Azul","#4da3ff"],["Verde","#3fdc8f"],["Amarillo","#ffcf3f"]];
+const ROUNDS=10,PARTIDAS=50,MAXP=20,THINK=5000;
+
+let NOCFG=!FB.apiKey,auth,db,SV,off=0;
+try{if(NOCFG)throw 0;firebase.initializeApp(FB);auth=firebase.auth();db=firebase.database();SV=firebase.database.ServerValue;db.ref(".info/serverTimeOffset").on("value",s=>off=s.val()||0)}catch(e){NOCFG=true}
+const now=()=>Date.now()+off,Q=new URLSearchParams(location.search),BASE=location.origin+location.pathname;
+const $=s=>document.querySelector(s),app=$("#app");
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g,"");
+const cap=w=>String(w).charAt(0).toUpperCase()+String(w).slice(1);
+const R=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const sh=(a,rn)=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rn()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+let me=null,role="",code="",room={},refs=[],busy=false,booted=false,ansRef=null,ansRid="",ans={},myFb="",tickT=null;
+
+// ---------- Contenido ----------
+function item(g,p,r){const i=p*ROUNDS+r,rn=R(i*7919+g.length*104729);
+ if(g==="huecos"){const w=PAL[i%PAL.length],L=[...w],o=sh([...L.keys()],rn),h=new Set(o.slice(0,Math.max(1,Math.round(L.length*.45))));return{q:L.map((c,j)=>h.has(j)?"_":c.toUpperCase()).join(" "),a:w}}
+ if(g==="anagrama"){const w=PAL[(i+257)%PAL.length],U=w.toUpperCase(),L=[...U];for(let k=0;k<9;k++){sh(L,rn);if(L.join("")!==U)break}return{q:L.join(" "),a:w}}
+ if(g==="calculo"){const n=k=>Math.floor(rn()*k),y=n(5);let q,a;
+  if(y===0){const x=10+n(90),z=10+n(90);q=`${x} + ${z}`;a=x+z}
+  else if(y===1){const x=30+n(70),z=5+n(x-5);q=`${x} − ${z}`;a=x-z}
+  else if(y===2){const x=2+n(11),z=2+n(14);q=`${x} × ${z}`;a=x*z}
+  else if(y===3){const x=2+n(9),z=2+n(11);q=`${x*z} ÷ ${x}`;a=z}
+  else{const x=5+n(40),z=5+n(40),w=2+n(9);q=`${x} + ${z} − ${w}`;a=x+z-w}
+  return{q,a:String(a)}}
+ const lg=room.cfg?.lang||"mix",l=lg==="mix"?(i%2?"en":"es"):lg,li=l==="es"?CES:CEN,w=li[(lg==="mix"?i>>1:i)%li.length];return{q:w,a:w,l}}
+
+// ---------- Ayudas ----------
+const ps=()=>Object.entries(room.players||{}).map(([u,v])=>({u,...v})).sort((a,b)=>(a.j||0)-(b.j||0));
+const onl=u=>!!(room.on||{})[u];
+const isHost=()=>me&&room.host===me.uid;
+const team=()=>room.cfg?.mode==="eq";
+const G=()=>GAMES[room.st?.g]||{};
+const secs=g=>(room.cfg?.secs||{})[g]||GAMES[g].secs;
+const who=g=>(room.cfg?.who||{})[g]||"all";
+const tname=t=>TEAMS[t]?TEAMS[t][0]:"";
+const tdot=t=>TEAMS[t]?`<span class="dot" style="background:${TEAMS[t][1]}"></span>`:"";
+const cfgGames=()=>Object.keys(room.cfg?.games||{}).filter(g=>GAMES[g]&&room.cfg.games[g]);
+const upd=o=>db.ref(`rooms/${code}/st`).update(o);
+const setCfg=(k,v)=>db.ref(`rooms/${code}/cfg/${k}`).set(v);
+function arb(){const on=room.on||{};if(room.tv&&on[room.tv])return room.tv;if(on[room.host])return room.host;return ps().find(p=>on[p.u])?.u}
+function ctrlU(){if(onl(room.host))return room.host;return ps().find(p=>onl(p.u))?.u}
+const amCtrl=()=>me&&ctrlU()===me.uid;
+function members(t){const all=ps().filter(p=>p.t===t),o=all.filter(p=>onl(p.u));return o.length?o:all}
+function defCfg(){const s={},w={},g={};for(const k in GAMES){s[k]=GAMES[k].secs;w[k]="all";g[k]=true}return{mode:"ind",teams:2,form:"elegir",order:"rand",games:g,secs:s,who:w,lang:"mix"}}
+function qr(t,s){const el=$("#qr");if(!el||typeof QRCode==="undefined")return;el.innerHTML="";new QRCode(el,{text:t,width:s,height:s})}
+function msg(h){app.innerHTML=`<h1>PICAOS ⚡</h1><div class="box">${h}</div>`}
+function wake(){const w=()=>{try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}};w();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")w()})}
+
+// ---------- Arranque ----------
+if(NOCFG){home();app.insertAdjacentHTML("beforeend",`<div class="box center muted">⚠️ ${FB.apiKey&&FB.apiKey!=="x"?"No se ha podido conectar con Firebase. Revisa la conexión o abre el juego desde su enlace web.":"Falta pegar la configuración de Firebase (línea <b>const FB=</b>). Sin ella se ve la portada pero no se puede jugar."}</div>`)}
+else auth.onAuthStateChanged(u=>{if(!u){auth.signInAnonymously().catch(e=>msg("Error de conexión: "+esc(e.message)));return}me=u;if(!booted){booted=true;boot()}});
+async function boot(){
+ const it=sessionStorage.getItem("intent");if(it!==null){sessionStorage.removeItem("intent");return homeHost(it)}
+ if(Q.has("tv"))return tvStart();
+ if(Q.has("pair"))return homeHost(Q.get("pair"));
+ const qs=(Q.get("sala")||"").toUpperCase(),sv=localStorage.getItem("sala")||"";
+ for(const c of [qs,sv])if(c){try{if((await db.ref(`rooms/${c}/players/${me.uid}`).get()).exists())return enter(c)}catch(e){}}
+ if(qs)return joinScreen(qs);
+ home()}
+function home(){app.innerHTML=`<div class="logo"><div class="lt">PICAOS</div><div class="lr">⚡</div><div class="ll">Aquí se viene a ganar</div><div class="li">🔤 🎤 ➗ 🎨 🕵️ ❓</div></div><div class="box"><input id="jc" type="text" placeholder="Código de 4 letras" maxlength="4" style="text-transform:uppercase;text-align:center;font-size:1.3em"><button class="pri" data-a="goJoin">Unirme</button><button data-a="host">Crear sala</button><button data-a="tv" style="background:none;color:var(--muted)">📺 Modo tele</button></div>`}
+function joinScreen(c){app.innerHTML=`<h1>Sala ${esc(c)}</h1><div class="box"><label>Tu nombre</label><input id="nm" type="text" maxlength="16" value="${esc(localStorage.getItem("nombre")||"")}"><button class="pri" data-a="join" data-v="${esc(c)}">Entrar</button><div id="er" class="muted"></div></div>`}
+function homeHost(pin){
+ if(!me||me.isAnonymous){app.innerHTML=`<h1>Crear sala</h1><div class="box"><p>Para crear salas tienes que entrar con tu cuenta de Google.</p><button class="pri" data-a="login" data-v="${esc(pin)}">Entrar con Google</button></div>`;return}
+ app.innerHTML=`<h1>Crear sala</h1><div class="box"><label>Tu nombre en el juego</label><input id="nm" type="text" maxlength="16" value="${esc(localStorage.getItem("nombre")||(me.displayName||"").split(" ")[0])}"><button class="pri" data-a="create" data-v="${esc(pin)}">Crear sala</button><div id="er" class="muted"></div></div>`}
+async function linkTv(c,pin){const s=await db.ref("pair/"+pin).get();if(!s.exists()||!s.val().tv)return alert("No encuentro esa tele. Revisa el PIN.");await db.ref(`rooms/${c}/tv`).set(s.val().tv);await db.ref(`pair/${pin}/room`).set(c)}
+function tvStart(){document.body.classList.add("tv");const pin=String(1000+Math.floor(Math.random()*9000)),r=db.ref("pair/"+pin),rr=r.child("room");
+ r.set({tv:me.uid,t:SV.TIMESTAMP});r.onDisconnect().remove();
+ app.innerHTML=`<h1>Modo pantalla</h1><div class="box center"><p>Escanea este código con el móvil del anfitrión</p><div id="qr"></div><div class="big">${pin}</div><p class="muted">o escribe este PIN en la sala</p></div>`;
+ qr(BASE+"?pair="+pin,300);
+ rr.on("value",s=>{if(s.val()){rr.off();r.onDisconnect().cancel();r.remove();role="tv";enter(s.val())}})}
+function enter(c){code=c;if(role==="tv")document.body.classList.add("tv");else{role="p";localStorage.setItem("sala",c)}
+ const r=db.ref("rooms/"+c);
+ ["cfg","players","on","st","sc","sct","tv","host"].forEach(k=>{const ref=r.child(k);refs.push(ref);ref.on("value",s=>{room[k]=s.val();if(k==="host"&&!s.exists())return leave("La sala se ha cerrado.");render()})});
+ const on=r.child("on/"+me.uid),con=db.ref(".info/connected");refs.push(con);con.on("value",s=>{if(s.val()){on.onDisconnect().remove();on.set(true)}});
+ wake();if(!tickT)tickT=setInterval(tick,400)}
+function leave(t){refs.forEach(r=>r.off());refs=[];if(ansRef)ansRef.off();localStorage.removeItem("sala");code="";room={};msg(`<p>${esc(t)}</p><button class="pri" data-a="home">Volver al inicio</button>`)}
+
+// ---------- Árbitro ----------
+function tick(){if(!code||!room.st)return;clocks();if(busy||!me||arb()!==me.uid)return;
+ const st=room.st,t=now(),run=f=>{busy=true;Promise.resolve().then(f).catch(e=>console.error(e)).finally(()=>busy=false)};
+ switch(st.ph){
+  case"start":return run(nextGame);
+  case"chosen":return run(()=>beginGame(st.g));
+  case"intro":if(!st.pz&&t>=st.end)run(()=>startRound(0));return;
+  case"round":if(st.pz)return;
+   if(G().k==="speed"){if(t>=st.end)return run(()=>reveal(null));listenAns(st);const w=winner(st);if(w)run(()=>reveal(w))}
+   else if(st.sub==="think"&&t>=st.end)run(()=>upd({sub:"wait",end:null}));
+   else if(st.sub==="sing"&&t>=st.end)run(()=>upd({sub:"judge",end:null}));
+   return;
+  case"reveal":if(!st.pz&&t>=st.end)run(()=>st.r+1<ROUNDS?startRound(st.r+1):upd({ph:"gend",end:t+8000,tot:8000}));return;
+  case"gend":if(!st.pz&&t>=st.end)run(nextGame);return}}
+function listenAns(st){const rid=st.gi+"_"+st.r;if(rid===ansRid)return;if(ansRef)ansRef.off();ansRid=rid;ans={};ansRef=db.ref(`rooms/${code}/ans/${rid}`);ansRef.on("value",s=>ans=s.val()||{})}
+function canAns(u,st){const p=(room.players||{})[u];if(!p)return false;if(!team())return true;if(!(p.t>=0))return false;return who(st.g)!=="one"||(st.resp||{})[p.t]===u}
+function winner(st){const it=item(st.g,st.p,st.r),l=Object.entries(ans).filter(([u,v])=>v&&canAns(u,st)&&norm(v.a)===norm(it.a)).sort((a,b)=>(a[1].t||0)-(b[1].t||0));if(!l.length)return null;const u=l[0][0];return{u,t:room.players[u].t}}
+async function reveal(w){const o={ph:"reveal",end:now()+4500,tot:4500,pz:false,win:null,sub:null};
+ if(w){const p=(room.players||{})[w.u]||{};o.win={u:w.u||"",n:w.u?p.n||"?":"",t:w.t>=0?w.t:-1};
+  if(w.u)await db.ref(`rooms/${code}/sc/${w.u}`).set(SV.increment(1));
+  if(team()&&w.t>=0)await db.ref(`rooms/${code}/sct/${w.t}`).set(SV.increment(1))}
+ return upd(o)}
+async function nextGame(){const st=room.st,d=st.done||{},left=cfgGames().filter(g=>!d[g]);
+ if(!left.length)return upd({ph:"end",end:null,pz:false});
+ if(room.cfg.order==="rand")return beginGame(left[Math.floor(Math.random()*left.length)]);
+ return upd({ph:"pick",pk:(st.pk??-1)+1,end:null,pz:false})}
+function partida(g){const k="usadas_"+g;let u=[];try{u=JSON.parse(localStorage.getItem(k)||"[]")}catch(e){}
+ let f=[...Array(PARTIDAS).keys()].filter(i=>!u.includes(i));if(!f.length){u=[];f=[...Array(PARTIDAS).keys()]}
+ const p=f[Math.floor(Math.random()*f.length)];u.push(p);try{localStorage.setItem(k,JSON.stringify(u))}catch(e){}return p}
+async function beginGame(g){if(!GAMES[g])return nextGame();await db.ref(`rooms/${code}/ans`).remove();
+ return upd({ph:"intro",g,p:partida(g),gi:(room.st.gi||0)+1,r:0,end:now()+6000,tot:6000,pz:false,win:null,sub:null,["done/"+g]:true})}
+function startRound(r){const st=room.st,g=st.g,t=now(),o={ph:"round",r,pz:false,win:null,resp:null};
+ if(team()){o.resp={};for(let k=0;k<room.cfg.teams;k++){const m=members(k);if(m.length)o.resp[k]=m[(st.gi*3+r)%m.length].u}}
+ if(GAMES[g].k==="speed")Object.assign(o,{end:t+secs(g)*1000,tot:secs(g)*1000,sub:null});
+ else{const tk=(st.tk??-1)+1;Object.assign(o,singer(tk),{tk,sub:"think",end:t+THINK,tot:THINK})}
+ return upd(o)}
+function singer(tk){if(!team()){let l=ps().filter(p=>onl(p.u));if(!l.length)l=ps();const p=l[tk%Math.max(1,l.length)];return{sg:p?p.u:"",stm:-1}}
+ const n=room.cfg.teams,tm=tk%n,m=members(tm);return{sg:who("canta")==="one"&&m.length?m[Math.floor(tk/n)%m.length].u:"",stm:tm}}
+
+// ---------- Acciones ----------
+const A={
+ goJoin(){const c=$("#jc").value.trim().toUpperCase();if(c.length===4)joinScreen(c)},
+ host(){homeHost("")},
+ tv(){location.href=BASE+"?tv"},
+ home(){location.href=BASE},
+ async join(c){const n=$("#nm").value.trim(),er=$("#er");if(!n)return;localStorage.setItem("nombre",n);
+  const [h,pl,cf,s]=await Promise.all(["host","players","cfg","st"].map(k=>db.ref(`rooms/${c}/${k}`).get()));
+  if(!h.exists())return er.textContent="Esa sala no existe.";
+  const pv=pl.val()||{};if(Object.keys(pv).length>=MAXP)return er.textContent="La sala está llena (20 jugadores).";
+  const cfg=cf.val()||{};let t=-1;
+  if(cfg.mode==="eq"&&((s.val()||{}).ph!=="lobby"||cfg.form==="azar")){const cnt=Array(cfg.teams).fill(0);Object.values(pv).forEach(p=>{if(p.t>=0&&p.t<cfg.teams)cnt[p.t]++});t=cnt.indexOf(Math.min(...cnt))}
+  await db.ref(`rooms/${c}/players/${me.uid}`).set({n,j:SV.TIMESTAMP,t});enter(c)},
+ login(pin){const p=new firebase.auth.GoogleAuthProvider();auth.signInWithPopup(p).then(r=>{me=r.user;homeHost(pin)}).catch(e=>{if(/popup/.test(e.code||"")){sessionStorage.setItem("intent",pin||"");auth.signInWithRedirect(p)}else alert(e.message)})},
+ async create(pin){const n=$("#nm").value.trim();if(!n)return;localStorage.setItem("nombre",n);
+  try{const old=await db.ref("rooms").orderByChild("host").equalTo(me.uid).get(),rm={};old.forEach(c=>{rm[c.key]=null});if(Object.keys(rm).length)await db.ref("rooms").update(rm);
+   let c;do{c=Array.from({length:4},()=>"ABCDEFGHJKLMNPQRSTUVWXYZ"[Math.floor(Math.random()*24)]).join("")}while((await db.ref(`rooms/${c}/host`).get()).exists());
+   await db.ref(`rooms/${c}`).set({host:me.uid,c:SV.TIMESTAMP,cfg:defCfg(),players:{[me.uid]:{n,j:SV.TIMESTAMP,t:-1}},st:{ph:"lobby"}});
+   if(pin)await linkTv(c,pin);enter(c)}
+  catch(e){$("#er").textContent="No se pudo crear la sala. ¿Has entrado con la cuenta autorizada en las reglas? ("+e.message+")"}},
+ linkTv(){const p=$("#pin").value.trim();if(p)linkTv(code,p)},
+ cfg(v,b){setCfg(b.dataset.k,/^\d+$/.test(v)?+v:v)},
+ allG(){const g={};for(const k in GAMES)g[k]=true;setCfg("games",g)},
+ team(t){db.ref(`rooms/${code}/players/${me.uid}/t`).set(+t)},
+ rand(){const o={};sh(ps(),Math.random).forEach((p,i)=>o[p.u+"/t"]=i%room.cfg.teams);db.ref(`rooms/${code}/players`).update(o)},
+ kick(u){db.ref(`rooms/${code}/players/${u}`).remove();db.ref(`rooms/${code}/on/${u}`).remove()},
+ async start(){if(!cfgGames().length)return alert("Elige al menos un juego.");
+  if(team()){const n=room.cfg.teams,o={};
+   if(room.cfg.form==="azar")sh(ps(),Math.random).forEach((p,i)=>o[p.u+"/t"]=i%n);
+   else{const cnt=Array(n).fill(0);ps().forEach(p=>{if(p.t>=0&&p.t<n)cnt[p.t]++});ps().forEach(p=>{if(!(p.t>=0&&p.t<n)){const k=cnt.indexOf(Math.min(...cnt));o[p.u+"/t"]=k;cnt[k]++}})}
+   if(Object.keys(o).length)await db.ref(`rooms/${code}/players`).update(o)}
+  await db.ref(`rooms/${code}`).update({sc:null,sct:null,ans:null,st:{ph:"start"}})},
+ again(){db.ref(`rooms/${code}`).update({sc:null,sct:null,ans:null,st:{ph:"lobby"}})},
+ close(){if(confirm("¿Cerrar la sala para todos?"))db.ref("rooms/"+code).remove()},
+ out(){const c=code,u=me.uid;leave("Has salido de la sala.");db.ref(`rooms/${c}/players/${u}`).remove();db.ref(`rooms/${c}/on/${u}`).remove()},
+ pick(g){upd({ph:"chosen",g})},
+ ans(){const st=room.st,i=$("#ans");if(!i)return;const v=i.value.trim();if(!v)return;const it=item(st.g,st.p,st.r);
+  if(norm(v)===norm(it.a)){const rid=st.gi+"_"+st.r;db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:v,t:SV.TIMESTAMP});myFb=rid;i.value="";render()}
+  else{const f=$("#fb");if(f)f.textContent="✗ No es correcta";i.select()}},
+ pause(){const st=room.st;if(st.pz)upd({pz:false,end:now()+(st.rem||0)});else if(st.end)upd({pz:true,rem:Math.max(0,st.end-now())})},
+ restart(){const st=room.st;if(!st.tot)return;if(st.sub==="judge")return upd({sub:"sing",end:now()+st.tot,pz:false});upd(st.pz?{rem:st.tot}:{end:now()+st.tot})},
+ skipR(){if(room.st.ph==="round")reveal(null)},
+ skipG(){upd({ph:"gend",end:now()+8000,tot:8000,pz:false})},
+ endS(){if(confirm("¿Terminar la sesión?"))upd({ph:"end",end:null,pz:false})},
+ cStart(){const s=secs("canta")*1000;upd({sub:"sing",end:now()+s,tot:s,pz:false})},
+ cOk(){const st=room.st;reveal({u:st.sg||"",t:st.stm})},
+ cFail(){upd({sub:"fail",end:null,pz:false})},
+ cReb(){const tk=(room.st.tk||0)+1;upd({tk,...singer(tk),sub:"think",end:now()+THINK,tot:THINK,pz:false})},
+ cNext(){reveal(null)}
+};
+app.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b||!A[b.dataset.a])return;e.preventDefault();A[b.dataset.a](b.dataset.v,b)});
+app.addEventListener("submit",e=>{e.preventDefault();const f=e.target.dataset.f;if(f&&A[f])A[f]()});
+app.addEventListener("change",e=>{const el=e.target.closest("[data-c]");if(!el)return;const k=el.dataset.c,g=el.dataset.v;
+ if(k==="game")setCfg("games/"+g,el.checked||null);
+ else if(k==="secs")setCfg("secs/"+g,Math.max(5,Math.min(300,Math.round(+el.value)||GAMES[g].secs)));
+ else if(k==="who")setCfg("who/"+g,el.value);
+ else if(k==="lang")setCfg("lang",el.value)});
+
+// ---------- Vistas ----------
+const CLK=`<div class="clk"><b></b></div>`;
+function clocks(){const st=room.st;if(!st)return;const rem=st.pz?st.rem:(st.end?st.end-now():null);
+ document.querySelectorAll(".clk").forEach(el=>{if(rem==null){el.hidden=true;return}el.hidden=false;const s=Math.max(0,Math.ceil(rem/1000));el.querySelector("b").textContent=st.pz?"⏸":s;el.style.setProperty("--p",Math.max(0,Math.min(1,rem/(st.tot||1))));el.classList.toggle("low",s<=5&&!st.pz)})}
+function render(){if(!code||!room.st||!room.cfg||!room.players)return;
+ if(role!=="tv"&&!room.players[me.uid])return leave("Ya no estás en la sala.");
+ const a=$("#ans"),av=a?a.value:"",af=a&&document.activeElement===a,st=room.st,tv=role==="tv";
+ const V={lobby:lobbyV,pick:pickV,intro:introV,round:roundV,reveal:revealV,gend:gendV,end:endV}[st.ph];
+ let h=top()+(V?V(st,tv):`<div class="box center">Preparando…</div>`);
+ if(!tv&&amCtrl()&&["pick","intro","round","reveal","gend"].includes(st.ph))h+=ctrlBar(st);
+ app.innerHTML=h;
+ const b=$("#ans");if(b){b.value=av;if(af)b.focus()}
+ if($("#qr"))qr(BASE+"?sala="+code,tv?320:200);
+ clocks()}
+function top(){const p=(room.players||{})[me.uid];return `<div class="row" style="justify-content:space-between"><b>Sala ${code}</b><span class="row">${p?esc(p.n):"Pantalla"} ${p&&team()&&p.t>=0?tdot(p.t)+tname(p.t):""}</span></div>`}
+function plist(kick){const T=team();return `<ul class="list">${ps().map(p=>`<li>${T?tdot(p.t):""}<span class="n">${esc(p.n)}${p.u===room.host?" ⭐":""}${onl(p.u)?"":' <span class="muted">(desconectado)</span>'}</span>${kick&&p.u!==me.uid?`<button data-a="kick" data-v="${p.u}" aria-label="Expulsar">✕</button>`:""}</li>`).join("")}</ul>`}
+function lobbyV(st,tv){const c=room.cfg,H=isHost()&&!tv,T=team();
+ let h=`<div class="box center"><h2>Únete escaneando el código</h2><div id="qr"></div><div class="big">${code}</div><div class="muted">${esc(BASE)}?sala=${code}</div></div>`;
+ if(!tv&&T&&c.form==="elegir"){const mt=room.players[me.uid].t;h+=`<div class="box"><h2>Elige equipo</h2><div class="row">${TEAMS.slice(0,c.teams).map((t,i)=>`<button data-a="team" data-v="${i}" class="${mt===i?"on":""}" style="background:${t[1]};color:#111">${t[0]}</button>`).join("")}</div></div>`}
+ h+=`<div class="box"><h2>Jugadores (${ps().length}/${MAXP})</h2>${plist(H)}</div>`;
+ if(H)h+=cfgV(c);else if(!tv)h+=`<div class="box center muted">Esperando a que el anfitrión empiece…</div>`;
+ if(!tv)h+=`<button data-a="${H?"close":"out"}">${H?"Cerrar sala":"Salir de la sala"}</button>`;
+ return h}
+function cfgV(c){const seg=(k,o)=>`<div class="row">${o.map(([v,l])=>`<button data-a="cfg" data-k="${k}" data-v="${v}" class="${c[k]===v?"on":""}">${l}</button>`).join("")}</div>`,T=c.mode==="eq",gs=c.games||{};
+ let h=`<div class="box"><h2>Configuración</h2><label>Modo</label>${seg("mode",[["ind","Individual"],["eq","Por equipos"]])}`;
+ if(T)h+=`<label>Número de equipos</label>${seg("teams",[[2,"2"],[3,"3"],[4,"4"]])}<label>Formación</label>${seg("form",[["elegir","Cada uno elige"],["azar","Al azar"]])}<button data-a="rand">Repartir equipos al azar ahora</button>`;
+ h+=`<label>Orden de los juegos</label>${seg("order",[["rand","Aleatorio"],["pick",T?"Lo eligen los equipos por turnos":"Lo eligen los jugadores por turnos"]])}`;
+ h+=`<div class="row" style="justify-content:space-between"><label>Juegos y segundos${T?" · quién contesta":""}</label><button data-a="allG">Todos</button></div><ul class="list">`;
+ for(const g in GAMES)h+=`<li><input type="checkbox" data-c="game" data-v="${g}" ${gs[g]?"checked":""} aria-label="${GAMES[g].n}"><span class="n">${GAMES[g].n}</span><input type="number" data-c="secs" data-v="${g}" value="${secs(g)}" min="5" max="300" step="5" aria-label="Segundos">${T?`<select data-c="who" data-v="${g}"><option value="all" ${who(g)==="all"?"selected":""}>Todo el equipo</option><option value="one" ${who(g)==="one"?"selected":""}>Solo uno</option></select>`:""}</li>`;
+ const L=c.lang||"mix";
+ h+=`</ul><label>Idioma en Canta la palabra</label><select data-c="lang"><option value="mix" ${L==="mix"?"selected":""}>Los dos</option><option value="es" ${L==="es"?"selected":""}>Español</option><option value="en" ${L==="en"?"selected":""}>Inglés</option></select>`;
+ h+=room.tv?`<div class="muted">✓ Tele conectada</div>`:`<div class="row"><input id="pin" type="text" inputmode="numeric" placeholder="PIN de la tele"><button data-a="linkTv">Vincular tele</button></div>`;
+ return h+`<button class="pri" data-a="start">¡Empezar!</button></div>`}
+function pickV(st,tv){const left=cfgGames().filter(g=>!(st.done||{})[g]);let nm="",mine=false;
+ if(team()){const t=st.pk%room.cfg.teams;nm="Equipo "+tname(t);mine=!tv&&room.players[me.uid]?.t===t}
+ else{const l=ps(),p=l[st.pk%Math.max(1,l.length)];nm=p?p.n:"";mine=!tv&&p&&p.u===me.uid}
+ const can=mine||(!tv&&amCtrl());
+ return `<div class="box center"><h2>Elige el siguiente juego: ${esc(nm)}</h2>${can?left.map(g=>`<button class="pri" data-a="pick" data-v="${g}">${GAMES[g].n}</button>`).join(""):`<p class="muted">Quedan: ${left.map(g=>GAMES[g].n).join(", ")}</p>`}</div>`+score(true)}
+function introV(st){const g=GAMES[st.g]||{};return `<div class="box center"><div class="muted">Juego ${st.gi} de ${cfgGames().length}</div><h1>${g.n}</h1><p>${g.rules}</p>${team()?`<p class="muted">${who(st.g)==="one"?(g.k==="speed"?"Contesta un portavoz por equipo (va rotando)":"Canta uno por equipo (va rotando)"):(g.k==="speed"?"Puede contestar todo el equipo":"Canta todo el equipo")}</p>`:""}<div class="stage">${CLK}</div></div>`}
+function roundV(st,tv){const g=GAMES[st.g],it=item(st.g,st.p,st.r),hd=`<div class="muted center">${g.n} · Ronda ${st.r+1}/${ROUNDS}${st.pz?" · ⏸ Pausa":""}</div>`;
+ if(g.k==="turn")return cantaV(st,tv,it,hd);
+ let h=`<div class="box">${hd}<div class="stage"><div class="big">${esc(it.q)}</div>${CLK}</div>`;
+ if(!tv){const rid=st.gi+"_"+st.r,mp=room.players[me.uid];
+  if(myFb===rid)h+=`<p class="center" style="color:var(--ok)">✓ ¡Correcta! Esperando…</p>`;
+  else if(canAns(me.uid,st))h+=`<form data-f="ans" class="row"><input id="ans" type="text" ${st.g==="calculo"?'inputmode="numeric"':""} autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Tu respuesta"><button class="pri">Enviar</button></form><div id="fb" class="muted center"></div>`;
+  else{const r=(st.resp||{})[mp?.t];h+=`<p class="muted center">${r?`Contesta <b>${esc(room.players[r]?.n||"?")}</b> por tu equipo`:"Mira la pantalla"}</p>`}}
+ return h+`</div>`+(tv?score(true):"")}
+function cantaV(st,tv,it,hd){const nm=st.sg?(room.players[st.sg]?.n||"?"):"Equipo "+tname(st.stm),mp=room.players[me.uid],mine=!tv&&(st.sg?st.sg===me.uid:mp&&mp.t===st.stm),C=!tv&&amCtrl();
+ const m={think:"¡Memoriza la palabra!",wait:"¿Preparado?",sing:"¡A cantar!",judge:"¡Tiempo! ¿La ha cantado?",fail:"No la ha cantado"}[st.sub]||"";
+ let h=`<div class="box center">${hd}<div>Turno de <b>${esc(nm)}</b> ${team()?tdot(st.stm):""}</div><span class="muted">${it.l==="en"?"INGLÉS":"ESPAÑOL"}</span><div class="stage"><div class="big">${st.sub==="think"?esc(cap(it.q)):"?"}</div>${CLK}</div><p><b>${m}</b></p>`;
+ if(st.sub==="wait"&&(mine||C))h+=`<button class="pri" data-a="cStart">¡Empezar a cantar!</button>`;
+ if(C&&st.sub!=="think"){const q=encodeURIComponent(it.q);
+  h+=`<div class="muted">Palabra: <b>${esc(it.q)}</b> · Comprobar: <a target="_blank" rel="noopener" href="https://open.spotify.com/search/${q}">Spotify</a> · <a target="_blank" rel="noopener" href="https://www.musixmatch.com/search?query=${q}">Musixmatch</a> · <a target="_blank" rel="noopener" href="https://genius.com/search?q=${q}">Genius</a></div>`;
+  if(st.sub==="sing"||st.sub==="judge")h+=`<div class="row" style="justify-content:center"><button class="ok" data-a="cOk">¡La ha cantado! +1</button><button class="bad" data-a="cFail">No la ha cantado</button></div>`;
+  if(st.sub==="fail")h+=`<div class="row" style="justify-content:center"><button data-a="cReb">Rebote: misma palabra al siguiente</button><button class="pri" data-a="cNext">Siguiente palabra</button></div>`}
+ return h+`</div>`+(tv?score(true):"")}
+function revealV(st){const g=GAMES[st.g]||{},it=item(st.g,st.p,st.r),w=st.win;let r="Nadie ha acertado";
+ if(w){const x=[];if(w.u)x.push(esc(w.n));if(team()&&w.t>=0)x.push("Equipo "+tname(w.t));r="¡Punto para "+x.join(" · ")+"!"}
+ return `<div class="box center"><div class="muted">${g.n} · Ronda ${st.r+1}/${ROUNDS}</div><div>${g.k==="turn"?"Palabra":"Respuesta"}</div><div class="big">${esc(cap(it.a))}</div><h2>${r}</h2><div class="stage">${CLK}</div></div>`+score(true)}
+function gendV(st){return `<div class="box center"><h2>Fin de ${GAMES[st.g]?.n||"juego"}</h2><div class="stage">${CLK}</div></div>`+score(false)}
+function endV(st,tv){return `<h1>¡Fin de la sesión!</h1>`+score(false)+(tv?"":isHost()?`<button class="pri" data-a="again">Jugar otra sesión</button><button data-a="close">Cerrar sala</button>`:`<button data-a="out">Salir de la sala</button>`)}
+function score(c){const sc=room.sc||{},T=team(),l=ps().sort((a,b)=>(sc[b.u]||0)-(sc[a.u]||0));let h=`<div class="box"><h2>Marcador</h2>`;
+ if(T){const s=room.sct||{},ts=[...Array(room.cfg.teams).keys()].sort((a,b)=>(s[b]||0)-(s[a]||0));
+  h+=`<ul class="list">${ts.map(t=>`<li>${tdot(t)}<span class="n">Equipo ${tname(t)}${c?"":`<br><small class="muted">${ps().filter(p=>p.t===t).map(p=>esc(p.n)+" "+(sc[p.u]||0)).join(" · ")}</small>`}</span><span class="p">${s[t]||0}</span></li>`).join("")}</ul>`;
+  if(!c&&l.length&&(sc[l[0].u]||0)>0)h+=`<div class="muted">⭐ MVP: ${esc(l[0].n)} (${sc[l[0].u]})</div>`}
+ else h+=`<ul class="list">${(c?l.slice(0,5):l).map((p,i)=>`<li><span class="n">${i+1}. ${esc(p.n)}</span><span class="p">${sc[p.u]||0}</span></li>`).join("")}</ul>`;
+ return h+`</div>`}
+function ctrlBar(st){const b=(a,l,c="")=>`<button class="${c}" data-a="${a}">${l}</button>`;
+ return `<div class="ctrl">${st.end||st.pz||st.sub==="judge"?b("pause",st.pz?"▶ Reanudar":"⏸ Pausa")+b("restart","↺ Reiniciar tiempo"):""}${st.ph==="round"?b("skipR","⏭ Saltar ronda"):""}${["intro","round","reveal"].includes(st.ph)?b("skipG","⏩ Terminar juego"):""}${b("endS","■ Fin","bad")}</div>`}
+</script>
+</body></html>
