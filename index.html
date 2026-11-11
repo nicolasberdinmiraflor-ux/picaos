@@ -69,6 +69,9 @@ const GAMES={
  sinon:{n:"Sinónimos y antónimos",k:"speed",secs:30,rules:"Escribe un sinónimo o antónimo de la palabra. Gana el primero que acierte."},
  trivial:{n:"Trivial",k:"all",secs:20,rules:"Pregunta con 4 opciones. Todos contestan una vez: acertar da 1 punto y el más rápido en acertar gana 1 extra."},
  colmena:{n:"Mente colmena",k:"all",secs:30,rules:"Sale un tema y cada uno escribe lo primero que se le ocurra. Puntúas si coincides con la respuesta más repetida (en equipos, con la de tu equipo)."},
+ impostor:{n:"El impostor",k:"imp",secs:90,rules:"Todos ven la misma palabra menos el impostor. Por turnos, cada uno dice una pista. Después se vota quién es. Si lo pilláis, +1 para el grupo; si no, +2 para el impostor."},
+ tabu:{n:"Tabú",k:"tabu",secs:45,rules:"Uno describe la palabra sin decir las prohibidas y los demás la adivinan en voz alta. En equipos, el equipo rival vigila las palabras prohibidas."},
+ quesoy:{n:"¿Qué soy?",k:"qs",secs:30,rules:"Uno se pone el móvil en la frente y los demás le dan pistas para que adivine la palabra antes de que acabe el tiempo."},
  canta:{n:"Canta la palabra",k:"turn",secs:30,rules:"La palabra se ve 5 segundos. Después hay que cantar una canción que la lleve antes de que acabe el tiempo. El anfitrión decide si vale."}
 };
 const TEAMS=[["Rojo","#ff5d73"],["Azul","#4da3ff"],["Verde","#3fdc8f"],["Amarillo","#ffcf3f"]];
@@ -1122,10 +1125,630 @@ Algo típico de Madrid`.trim().split("\n"),
  ...["rojo","azul","verde","amarillo","blanco","negro","naranja","rosa"].map(c=>"Algo de color "+c),
  ..."la cocina|el baño|la playa|un colegio|una oficina|un hospital|un parque|un coche|la nevera|una mochila|el supermercado|el cine|el gimnasio|un aeropuerto|el zoo|una granja|el bosque|el circo|una discoteca|el dormitorio|la montaña|un estadio|una biblioteca|una iglesia|un hotel|un tren|un barco|un avión|un museo|la piscina|un camping|un restaurante|un bar|una peluquería|una farmacia|el metro|una estación|un jardín|el garaje|el salón".split("|").map(l=>"Algo que hay en "+l),
  ...["Un animal","Una fruta o verdura","Un país","Una ciudad","Un nombre de chico","Un nombre de chica","Una profesión","Una comida","Un deporte","Un objeto de casa","Una marca","Una prenda de ropa","Un cantante o grupo","Una película"].flatMap(c=>[..."ABCDEFGLMPRSTV"].map(l=>c+" que empiece por "+l))])];
+const TB=[...new Map(`perro:ladrar,mascota,gato
+gato:maullar,mascota,ratón
+casa:hogar,vivir,edificio
+coche:conducir,ruedas,motor
+playa:arena,mar,verano
+sol:calor,luz,cielo
+luna:noche,cielo,satélite
+estrella:cielo,brillar,noche
+lluvia:agua,nube,paraguas
+nieve:frío,blanco,invierno
+árbol:hoja,tronco,bosque
+flor:planta,pétalo,jardín
+manzana:fruta,roja,árbol
+plátano:fruta,amarillo,mono
+naranja:fruta,zumo,color
+fresa:fruta,roja,nata
+sandía:fruta,verano,pepitas
+pan:harina,panadería,barra
+queso:leche,ratón,vaca
+leche:vaca,blanca,beber
+huevo:gallina,tortilla,yema
+paella:arroz,Valencia,marisco
+tortilla:patata,huevo,cebolla
+pizza:Italia,queso,masa
+hamburguesa:carne,pan,McDonalds
+helado:frío,verano,cucurucho
+chocolate:cacao,dulce,marrón
+café:taza,cafeína,desayuno
+agua:beber,líquido,sed
+vino:uva,tinto,copa
+cerveza:caña,bar,espuma
+tren:vía,estación,vagón
+avión:volar,aeropuerto,piloto
+barco:mar,navegar,puerto
+bicicleta:pedal,ruedas,ciclista
+autobús:parada,conductor,billete
+metro:subterráneo,estación,línea
+taxi:conductor,carrera,coche
+moto:casco,ruedas,motor
+cohete:espacio,despegar,astronauta
+médico:hospital,enfermo,bata
+policía:ladrón,uniforme,detener
+bombero:fuego,manguera,incendio
+profesor:clase,alumno,colegio
+cocinero:cocina,comida,chef
+peluquero:pelo,cortar,tijeras
+fontanero:tubería,agua,grifo
+electricista:luz,cable,corriente
+piloto:avión,volar,cabina
+astronauta:espacio,cohete,luna
+futbolista:balón,gol,equipo
+cantante:canción,voz,micrófono
+pintor:cuadro,pincel,arte
+escritor:libro,escribir,novela
+juez:juicio,tribunal,ley
+abogado:juicio,defender,ley
+dentista:dientes,boca,caries
+veterinario:animales,mascota,médico
+carnicero:carne,cuchillo,tienda
+panadero:pan,horno,harina
+cartero:cartas,buzón,correo
+granjero:campo,animales,granja
+fútbol:balón,gol,portería
+baloncesto:canasta,balón,NBA
+tenis:raqueta,pelota,red
+natación:piscina,nadar,agua
+ciclismo:bicicleta,Tour,pedalear
+boxeo:guantes,puñetazo,ring
+golf:hoyo,palo,green
+esquí:nieve,montaña,tablas
+ajedrez:rey,tablero,peón
+parchís:dado,fichas,casa
+baraja:cartas,jugar,naipes
+guitarra:cuerdas,tocar,música
+piano:teclas,tocar,música
+batería:tambor,palillos,ritmo
+violín:arco,cuerdas,orquesta
+trompeta:soplar,instrumento,metal
+micrófono:cantar,voz,hablar
+teléfono:llamar,móvil,hablar
+ordenador:teclado,pantalla,ratón
+televisión:tele,canal,mando
+radio:emisora,escuchar,música
+cámara:foto,fotografía,objetivo
+reloj:hora,tiempo,muñeca
+gafas:ver,ojos,lentes
+paraguas:lluvia,abrir,mojarse
+llave:puerta,cerradura,abrir
+puerta:abrir,cerrar,entrar
+ventana:cristal,abrir,luz
+mesa:patas,comer,silla
+silla:sentarse,mesa,respaldo
+cama:dormir,colchón,almohada
+sofá:sentarse,salón,cojín
+nevera:frío,frigorífico,comida
+horno:calor,cocinar,pastel
+lavadora:ropa,lavar,detergente
+espejo:reflejo,mirarse,cristal
+toalla:secarse,baño,ducha
+ducha:agua,baño,jabón
+cepillo:dientes,pelo,pasta
+jabón:lavar,espuma,manos
+peine:pelo,peinarse,púas
+tijeras:cortar,papel,filo
+lápiz:escribir,goma,punta
+bolígrafo:escribir,tinta,boli
+libro:leer,páginas,biblioteca
+cuaderno:hojas,escribir,colegio
+mochila:espalda,colegio,llevar
+pizarra:tiza,clase,escribir
+colegio:alumnos,clase,profesor
+hospital:médico,enfermo,urgencias
+farmacia:medicina,pastillas,receta
+supermercado:comprar,carro,caja
+banco:dinero,cuenta,sentarse
+iglesia:misa,cura,campanas
+museo:cuadros,arte,exposición
+cine:película,pantalla,palomitas
+teatro:obra,actores,escenario
+biblioteca:libros,silencio,leer
+parque:columpio,árboles,niños
+zoo:animales,jaula,visitar
+circo:payaso,carpa,acróbata
+payaso:circo,nariz,reír
+mago:magia,truco,sombrero
+pirata:barco,tesoro,parche
+princesa:reina,castillo,corona
+rey:reina,corona,trono
+castillo:rey,torre,muralla
+dragón:fuego,volar,leyenda
+fantasma:sábana,miedo,muerto
+vampiro:sangre,colmillos,Drácula
+bruja:escoba,magia,Halloween
+robot:máquina,metal,inteligencia
+extraterrestre:marciano,ovni,espacio
+dinosaurio:extinto,fósil,Jurásico
+elefante:trompa,grande,orejas
+jirafa:cuello,alta,manchas
+león:rey,selva,melena
+tigre:rayas,felino,selva
+mono:plátano,selva,trepar
+oso:miel,hibernar,pardo
+lobo:aullar,luna,manada
+zorro:astuto,cola,rojo
+conejo:orejas,zanahoria,saltar
+caballo:montar,galopar,relinchar
+vaca:leche,mugir,granja
+cerdo:granja,jamón,rosa
+oveja:lana,balar,rebaño
+gallina:huevo,granja,pollo
+pato:cuac,agua,plumas
+pingüino:hielo,frío,Antártida
+delfín:mar,inteligente,saltar
+tiburón:dientes,mar,aleta
+ballena:mar,grande,mamífero
+pulpo:tentáculos,mar,tinta
+tortuga:caparazón,lenta,mar
+serpiente:veneno,reptil,arrastrarse
+cocodrilo:dientes,río,reptil
+rana:saltar,charca,verde
+mariposa:alas,volar,oruga
+abeja:miel,picar,colmena
+hormiga:pequeña,hormiguero,insecto
+araña:telaraña,patas,insecto
+mosquito:picar,zumbido,verano
+caracol:concha,lento,babas
+loro:hablar,pájaro,colores
+águila:volar,ave,pico
+búho:noche,ave,ojos
+murciélago:noche,volar,cueva
+camello:joroba,desierto,beber
+canguro:saltar,bolsa,Australia
+koala:Australia,eucalipto,oso
+cebra:rayas,caballo,blanco
+pez:agua,nadar,escamas
+cabeza:pelo,cuerpo,cerebro
+ojo:ver,mirar,cara
+nariz:oler,cara,respirar
+boca:labios,dientes,comer
+oreja:oír,escuchar,cabeza
+mano:dedos,brazo,coger
+pie:dedos,zapato,andar
+corazón:latir,amor,sangre
+diente:boca,morder,dentista
+pelo:cabeza,peinar,rubio
+barba:cara,afeitar,pelo
+uña:dedo,cortar,pintar
+rodilla:pierna,doblar,articulación
+espalda:columna,detrás,dolor
+amor:querer,corazón,pareja
+amigo:amistad,compañero,colega
+familia:padres,hijos,parientes
+abuelo:nieto,mayor,abuela
+bebé:pañal,llorar,niño
+novia:boda,pareja,novio
+boda:casarse,novios,iglesia
+cumpleaños:tarta,velas,regalo
+Navidad:diciembre,árbol,regalos
+Nochevieja:uvas,campanadas,año
+Reyes Magos:regalos,enero,camellos
+Halloween:disfraz,calabaza,miedo
+Carnaval:disfraz,fiesta,máscara
+verano:calor,vacaciones,playa
+invierno:frío,nieve,estación
+primavera:flores,estación,abril
+otoño:hojas,estación,caer
+lunes:semana,día,martes
+domingo:semana,descanso,día
+vacaciones:viajar,descanso,verano
+viaje:maleta,vacaciones,viajar
+maleta:viaje,ropa,ruedas
+pasaporte:viajar,documento,aeropuerto
+aeropuerto:avión,volar,terminal
+hotel:habitación,dormir,recepción
+montaña:alta,cima,subir
+río:agua,corriente,orilla
+lago:agua,barca,orilla
+mar:agua,playa,olas
+isla:mar,rodeada,tierra
+desierto:arena,calor,camello
+bosque:árboles,naturaleza,madera
+selva:árboles,jungla,animales
+volcán:lava,erupción,montaña
+cueva:oscura,roca,murciélago
+nube:cielo,lluvia,blanca
+arcoíris:colores,lluvia,cielo
+rayo:tormenta,trueno,luz
+viento:soplar,aire,huracán
+fuego:quemar,calor,llama
+hielo:frío,agua,congelado
+dinero:euros,pagar,billete
+regalo:sorpresa,envolver,cumpleaños
+tarta:cumpleaños,velas,pastel
+vela:fuego,cera,soplar
+globo:inflar,aire,fiesta
+pelota:jugar,redonda,balón
+muñeca:juguete,niña,jugar
+puzle:piezas,encajar,montar
+cometa:volar,viento,hilo
+columpio:parque,niños,balancear
+tobogán:parque,deslizarse,bajar
+piscina:nadar,agua,verano
+sombrero:cabeza,sol,ala
+zapato:pie,calzado,cordones
+camiseta:ropa,manga,algodón
+pantalón:piernas,ropa,vaqueros
+vestido:ropa,mujer,falda
+bufanda:cuello,frío,invierno
+guantes:manos,frío,dedos
+calcetín:pie,zapato,par
+pijama:dormir,noche,ropa
+bolso:mujer,llevar,cartera
+anillo:dedo,boda,joya
+collar:cuello,joya,perlas
+corona:rey,cabeza,reina
+espada:caballero,arma,filo
+escudo:defensa,caballero,proteger
+martillo:clavo,golpear,herramienta
+destornillador:tornillo,herramienta,girar
+escalera:subir,peldaños,bajar
+cuerda:atar,nudo,saltar
+caja:cartón,guardar,cerrar
+bolsa:plástico,llevar,compra
+botella:agua,beber,vidrio
+vaso:beber,agua,cristal
+taza:café,beber,asa
+plato:comer,mesa,cuchara
+cuchara:sopa,comer,cubierto
+tenedor:comer,cubierto,pinchar
+cuchillo:cortar,cubierto,filo
+sartén:freír,cocina,aceite
+olla:cocinar,agua,cocina
+microondas:calentar,cocina,minutos
+bombilla:luz,lámpara,encender
+linterna:luz,pilas,oscuridad
+pila:batería,energía,linterna
+enchufe:corriente,electricidad,pared
+semáforo:rojo,verde,tráfico
+carretera:coche,asfalto,conducir
+puente:río,cruzar,arco
+túnel:oscuro,montaña,atravesar
+calle:ciudad,acera,coches
+ciudad:urbana,habitantes,pueblo
+pueblo:pequeño,ciudad,aldea
+granja:animales,campo,granjero
+huerto:verduras,plantar,campo
+jardín:flores,plantas,césped
+tractor:campo,granjero,arar
+fábrica:producir,trabajadores,máquinas
+oficina:trabajo,ordenador,despacho
+jefe:trabajo,mandar,empresa
+trabajo:empleo,sueldo,oficina
+reunión:junta,trabajo,personas
+vacuna:pinchazo,médico,inyección
+pastilla:medicina,tragar,farmacia
+termómetro:fiebre,temperatura,grados
+fiebre:temperatura,enfermo,calor
+estornudo:nariz,resfriado,achís
+bostezo:sueño,boca,cansado
+sueño:dormir,cama,noche
+pesadilla:sueño,miedo,noche
+risa:reír,gracia,carcajada
+lágrima:llorar,triste,ojos
+beso:labios,amor,boca
+abrazo:brazos,cariño,apretar
+saludo:hola,mano,saludar
+foto:cámara,imagen,selfi
+selfi:foto,móvil,cara
+WhatsApp:mensaje,móvil,chat
+internet:red,web,conexión
+contraseña:clave,secreto,acceso
+correo:email,carta,mensaje
+videojuego:jugar,consola,mando
+consola:videojuego,mando,PlayStation
+mando:tele,botones,controlar
+película:cine,actor,ver
+serie:capítulos,temporada,tele
+canción:música,cantar,letra
+baile:bailar,música,pasos
+fiesta:celebrar,música,gente
+discoteca:bailar,noche,música
+concierto:música,cantante,escenario
+escenario:actuar,teatro,público
+aplauso:manos,palmas,público
+premio:ganar,trofeo,medalla
+medalla:oro,ganar,olimpiadas
+trofeo:copa,ganar,premio
+campeón:ganar,primero,título
+gol:fútbol,portería,marcar
+árbitro:pitar,partido,tarjeta
+portero:portería,parar,fútbol
+estadio:partido,campo,gradas
+entrenador:equipo,entrenar,banquillo
+carrera:correr,meta,velocidad
+meta:llegar,final,carrera
+maratón:correr,kilómetros,carrera
+gimnasio:pesas,ejercicio,deporte
+pesas:levantar,gimnasio,músculo
+yoga:postura,relajación,esterilla
+patinete:ruedas,eléctrico,manillar
+patines:ruedas,patinar,pies
+monopatín:skate,ruedas,tabla
+helicóptero:hélice,volar,aire
+submarino:agua,sumergido,barco
+ambulancia:hospital,sirena,urgencia
+camión:transporte,grande,camionero
+gasolina:coche,combustible,repostar
+rueda:coche,girar,neumático
+volante:conducir,coche,girar
+espacio:estrellas,astronauta,universo
+planeta:Tierra,sistema solar,órbita
+Tierra:planeta,mundo,azul
+Marte:planeta,rojo,marciano
+Saturno:anillos,planeta,gigante
+telescopio:estrellas,ver,lente
+mapa:país,ubicación,plano
+brújula:norte,orientarse,aguja
+bandera:país,tela,ondear
+himno:país,cantar,nacional
+Madrid:capital,España,Cibeles
+Barcelona:Cataluña,Sagrada Familia,Barça
+Sevilla:Andalucía,Giralda,feria
+Valencia:paella,Fallas,naranjas
+París:Francia,Torre Eiffel,capital
+Londres:Inglaterra,Big Ben,capital
+Roma:Italia,Coliseo,capital
+Nueva York:Estados Unidos,rascacielos,Estatua de la Libertad
+Japón:Tokio,sushi,país
+China:Pekín,muralla,país
+Egipto:pirámides,faraón,Nilo
+pirámide:Egipto,faraón,triángulo
+faraón:Egipto,pirámide,momia
+momia:vendas,Egipto,faraón
+tesoro:oro,cofre,pirata
+sirena:mar,cola,mujer
+unicornio:cuerno,caballo,mágico
+hada:alas,varita,magia
+gigante:grande,alto,enorme
+enano:pequeño,Blancanieves,bajo
+superhéroe:poderes,capa,salvar
+Batman:murciélago,Gotham,Robin
+Superman:capa,volar,Kryptonita
+Spiderman:araña,telaraña,Peter Parker
+Mickey Mouse:Disney,ratón,orejas
+Harry Potter:mago,Hogwarts,gafas
+Papá Noel:Navidad,regalos,barba
+Ratoncito Pérez:diente,moneda,almohada
+cuento:historia,niños,érase una vez
+poesía:verso,rima,poema
+periódico:noticias,papel,leer
+noticia:telediario,informar,periódico
+revista:leer,papel,portada
+diccionario:palabras,significado,libro
+idioma:lengua,hablar,inglés
+inglés:idioma,Inglaterra,hablar
+matemáticas:números,sumar,asignatura
+examen:prueba,nota,estudiar
+deberes:casa,tarea,colegio
+recreo:patio,colegio,jugar
+nota:examen,aprobar,suspenso
+universidad:carrera,estudiar,facultad
+graduación:título,terminar,birrete
+abuela:nieto,mayor,abuelo
+tío:padre,hermano,sobrino
+hermano:familia,padres,hermana
+vecino:casa,al lado,edificio
+ascensor:subir,bajar,pisos
+garaje:coche,aparcar,plaza
+balcón:casa,asomarse,terraza
+tejado:casa,tejas,arriba
+chimenea:fuego,humo,casa
+mascota:animal,casa,cuidar
+jaula:pájaro,encerrar,barrotes
+acuario:peces,agua,pecera
+herradura:caballo,suerte,hierro
+trébol:cuatro hojas,suerte,planta
+espantapájaros:pájaros,campo,paja
+semilla:planta,sembrar,crecer
+cactus:pinchos,desierto,planta
+rosa:flor,espinas,roja
+girasol:flor,sol,pipas
+seta:bosque,hongo,comer
+calabaza:Halloween,naranja,verdura
+zanahoria:conejo,naranja,verdura
+patata:tortilla,frita,tubérculo
+tomate:rojo,ensalada,salsa
+cebolla:llorar,cortar,verdura
+ajo:vampiro,olor,diente
+limón:ácido,amarillo,fruta
+uva:vino,racimo,Nochevieja
+piña:fruta,tropical,pinchos
+coco:palmera,fruta,blanco
+aguacate:guacamole,verde,fruta
+pepino:verde,ensalada,gazpacho
+lechuga:ensalada,verde,hoja
+arroz:paella,grano,blanco
+pasta:espaguetis,Italia,macarrones
+sopa:cuchara,caldo,caliente
+ensalada:lechuga,tomate,verde
+bocadillo:pan,relleno,merienda
+croqueta:frita,bechamel,jamón
+churros:chocolate,desayuno,freír
+galleta:dulce,horno,merienda
+caramelo:dulce,azúcar,chupar
+chicle:mascar,globo,menta
+palomitas:maíz,cine,explotar
+patatas fritas:aceite,freír,ketchup
+ketchup:tomate,salsa,patatas
+mostaza:salsa,amarilla,perrito
+sal:salado,blanco,comida
+azúcar:dulce,blanco,café
+miel:abeja,dulce,colmena
+mantequilla:tostada,untar,leche
+mermelada:fruta,tostada,untar
+yogur:leche,postre,cuchara
+zumo:fruta,naranja,beber
+refresco:burbujas,lata,beber
+té:taza,infusión,hojas
+copa:vino,brindar,cristal
+brindis:copas,chinchín,celebrar
+camarero:bar,servir,bandeja
+restaurante:comer,mesa,menú
+menú:carta,platos,restaurante
+propina:camarero,dinero,dejar
+mercado:comprar,puestos,fruta
+tienda:comprar,dependiente,vender
+cajero:dinero,banco,tarjeta
+tarjeta:pagar,banco,crédito
+moneda:euro,dinero,cara
+hucha:ahorrar,cerdito,monedas
+lotería:premio,número,sorteo
+casino:apostar,ruleta,dinero
+ruleta:girar,casino,número
+dado:caras,números,lanzar
+secreto:esconder,contar,nadie
+mentira:verdad,engañar,Pinocho
+Pinocho:nariz,madera,mentira
+Caperucita Roja:lobo,abuela,cesta
+Cenicienta:zapato,príncipe,calabaza
+Blancanieves:enanitos,manzana,bruja
+Peter Pan:volar,Campanilla,Nunca Jamás
+Don Quijote:Cervantes,Sancho,molinos
+miedo:susto,terror,asustarse
+sorpresa:inesperado,regalo,susto
+alegría:feliz,contento,sonrisa
+tristeza:triste,llorar,pena
+enfado:enfadado,rabia,gritar
+aburrimiento:aburrido,bostezo,nada
+hambre:comer,estómago,apetito
+sed:beber,agua,seca
+frío:temperatura,invierno,abrigo
+calor:temperatura,verano,sudar
+sudor:calor,gotas,ejercicio
+siesta:dormir,tarde,sofá
+despertador:alarma,levantarse,sonar
+noche:oscuro,dormir,luna
+calendario:fechas,días,mes
+cartel:anuncio,pared,letras
+anuncio:publicidad,tele,producto
+logo:símbolo,marca,dibujo
+dibujo:pintar,lápiz,papel
+pintura:color,pincel,cuadro
+estatua:piedra,escultura,figura
+álbum:fotos,cromos,colección
+cromos:álbum,coleccionar,pegar
+sello:carta,correo,pegar
+carta:sobre,escribir,correo
+postal:viaje,foto,enviar
+buzón:cartas,correo,cartero
+paquete:envío,caja,Amazon
+Google:buscar,internet,buscador
+YouTube:vídeos,ver,internet
+Instagram:fotos,red social,móvil
+TikTok:vídeos,bailes,red social
+auriculares:música,oídos,escuchar
+altavoz:sonido,música,volumen
+silencio:ruido,callar,nada
+grito:voz,fuerte,gritar
+susurro:hablar,bajo,oído
+eco:repetir,montaña,sonido
+sombra:sol,oscura,silueta
+cristal:vidrio,transparente,romper
+diamante:joya,brillante,caro
+oro:metal,dorado,caro
+plata:metal,gris,joya
+hierro:metal,duro,oxidar
+madera:árbol,mueble,tabla
+papel:hoja,escribir,blanco
+plástico:botella,reciclar,material
+cartón:caja,papel,marrón
+basura:cubo,tirar,reciclar
+contenedor:basura,reciclar,cubo
+escoba:barrer,suelo,bruja
+fregona:fregar,suelo,cubo
+aspiradora:polvo,limpiar,ruido
+plancha:ropa,arrugas,caliente
+lavavajillas:platos,lavar,cocina
+cortina:ventana,tela,correr
+alfombra:suelo,salón,pisar
+cojín:sofá,blando,almohada
+almohada:cama,cabeza,dormir
+manta:cama,frío,tapar
+armario:ropa,puertas,guardar
+cajón:mueble,abrir,guardar
+estantería:libros,baldas,mueble
+lámpara:luz,bombilla,encender
+camping:tienda,acampar,naturaleza
+hoguera:fuego,leña,campamento
+excursión:caminar,montaña,salir
+escalada:roca,trepar,cuerda
+paracaídas:saltar,avión,caer
+surf:ola,tabla,mar
+buceo:agua,bombona,mar
+pesca:caña,pez,río
+toro:cuernos,plaza,vaca
+flamenco:baile,Andalucía,guitarra
+castañuelas:flamenco,baile,sonar
+abanico:aire,calor,abrir
+tapas:bar,comer,aperitivo
+botijo:agua,barro,beber
+Velázquez:pintor,Meninas,Prado
+Picasso:pintor,Guernica,cubismo
+Cervantes:escritor,Quijote,manco
+Colón:América,descubrir,carabelas
+Napoleón:Francia,emperador,bajo
+Einstein:científico,relatividad,genio
+Mozart:compositor,música,Austria
+lavabo:baño,lavarse,grifo
+grifo:agua,abrir,lavabo
+váter:baño,inodoro,cisterna
+bañera:baño,agua,bañarse
+champú:pelo,lavar,ducha
+perfume:oler,colonia,olor
+pintalabios:labios,rojo,maquillaje
+cinturón:pantalón,hebilla,cintura
+corbata:cuello,traje,nudo
+abrigo:frío,invierno,chaqueta
+botas:pies,calzado,altas
+chanclas:playa,pies,verano
+bañador:playa,piscina,nadar
+sombrilla:playa,sol,sombra
+ola:mar,agua,surf
+concha:playa,mar,caracola
+cangrejo:pinzas,mar,playa
+gamba:marisco,mar,rosa
+calamar:tinta,anillas,mar
+sardina:pez,lata,mar
+langosta:marisco,caro,pinzas
+faro:luz,mar,barcos
+ancla:barco,hierro,fondo
+remo:barca,remar,agua
+cascada:agua,caer,río
+charco:lluvia,agua,saltar
+barro:tierra,agua,manchar
+piedra:roca,dura,tirar
+arena:playa,granos,desierto
+hoja:árbol,verde,otoño
+raíz:árbol,tierra,planta
+nido:pájaro,huevos,árbol
+pluma:pájaro,escribir,ligera
+gallo:cantar,mañana,quiquiriquí
+burro:rebuznar,orejas,cargar
+cabra:monte,leche,cuernos
+ardilla:árbol,bellota,cola
+ratón:queso,gato,pequeño
+hámster:jaula,rueda,mascota
+erizo:pinchos,bola,animal
+foca:mar,aplaudir,hielo
+cigüeña:bebés,torre,ave
+mosca:volar,insecto,molestar
+mariquita:roja,puntos,insecto
+gusano:tierra,arrastrarse,manzana
+medusa:mar,picar,transparente
+hipopótamo:río,África,grande
+rinoceronte:cuerno,África,grande
+gorila:mono,fuerte,selva
+panda:bambú,China,oso
+camaleón:color,lengua,reptil
+avestruz:ave,correr,cabeza
+mapache:antifaz,basura,animal`.trim().split("\n").map(l=>{const[w,t]=l.split(":");return[w,[w,t]]})).values()];
 const COLS=[["ROJO","#ff3b3b"],["AZUL","#3b82ff"],["VERDE","#22c55e"],["AMARILLO","#facc15"],["MORADO","#a855f7"],["NARANJA","#fb923c"],["ROSA","#f472b6"],["BLANCO","#ffffff"]];
 const cap=w=>String(w).charAt(0).toUpperCase()+String(w).slice(1);
 const sh=(a,rn)=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rn()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-let me=null,role="",code="",room={},refs=[],busy=false,booted=false,ansRef=null,ansRid="",ans={},myFb="",myAns="",tickT=null;
+let me=null,role="",code="",room={},refs=[],busy=false,booted=false,ansRef=null,ansRid="",ans={},myFb="",myAns="",qsShown="",tickT=null;
 
 // ---------- Contenido ----------
 function item(g,p,r){const i=p*ROUNDS+r,rn=R(i*7919+g.length*104729);
@@ -1145,6 +1768,9 @@ function item(g,p,r){const i=p*ROUNDS+r,rn=R(i*7919+g.length*104729);
  if(g==="colores"){const C=COLS.length,w=Math.floor(rn()*C);let k=Math.floor(rn()*(C-1));if(k>=w)k++;const o=new Set([k,w]);while(o.size<4)o.add(Math.floor(rn()*C));return{h:"Pulsa el color de la TINTA",q:COLS[w][0],ink:COLS[k][1],a:COLS[k][0].toLowerCase(),opts:sh([...o].map(x=>COLS[x][0]),rn)}}
  if(g==="trivial"){const e=TQ[(i*53)%TQ.length];return{h:"Trivial",q:e[0],a:e[1],opts:sh(e.slice(1,5),rn),lg:1}}
  if(g==="colmena")return{h:"Escribe lo que crees que dirá la mayoría",q:CM[(i*59)%CM.length],a:"",lg:1};
+ if(g==="impostor"){const w=PAL[(i*61+97)%PAL.length];return{q:w,a:w}}
+ if(g==="tabu"){const e=TB[(i*71)%TB.length];return{q:e[0],a:e[0],tb:e[1].split(",")}}
+ if(g==="quesoy"){const w=PAL[(i*67+211)%PAL.length];return{q:w,a:w}}
  if(g==="sinon"){const e=SP[(i*41)%SP.length];return{h:e[0],q:e[1].toUpperCase(),a:e[2].split(",").join("|")}}
  const lg=room.cfg?.lang||"mix",l=lg==="mix"?(i%2?"en":"es"):lg,li=l==="es"?CES:CEN,w=li[(lg==="mix"?i>>1:i)%li.length];return{q:w,a:w,l}}
 
@@ -1208,6 +1834,8 @@ function tick(){if(!code||!room.st)return;clocks();if(busy||!me||arb()!==me.uid)
   case"intro":if(!st.pz&&t>=st.end)run(()=>startRound(0));return;
   case"round":if(st.pz)return;
    if(G().k==="all"){listenAns(st);if(t>=st.end||allAns(st))run(()=>scoreAll(st));return}
+   if(G().k==="imp"){if(st.sub==="talk"&&t>=st.end)run(()=>upd({sub:"vote",end:now()+30000,tot:30000}));else if(st.sub==="vote"){listenAns(st);if(t>=st.end||ps().filter(p=>onl(p.u)).every(p=>ans[p.u]))run(()=>scoreImp(st))}return}
+   if(G().k==="tabu"||G().k==="qs"){if(t>=st.end)run(()=>reveal(null));return}
    if(G().k==="speed"){if(t>=st.end)return run(()=>reveal(null));listenAns(st);const w=winner(st);if(w)run(()=>reveal(w))}
    else if(st.sub==="think"&&t>=st.end)run(()=>upd({sub:"wait",end:null}));
    else if(st.sub==="sing"&&t>=st.end)run(()=>upd({sub:"judge",end:null}));
@@ -1250,9 +1878,23 @@ async function beginGame(g){if(!GAMES[g])return nextGame();await db.ref(`rooms/$
  return upd({ph:"intro",g,p:partida(g),gi:(room.st.gi||0)+1,r:0,end:now()+6000,tot:6000,pz:false,win:null,sub:null,["done/"+g]:true})}
 function startRound(r){const st=room.st,g=st.g,t=now(),o={ph:"round",r,pz:false,win:null,resp:null};
  if(team()){o.resp={};for(let k=0;k<room.cfg.teams;k++){const m=members(k);if(m.length)o.resp[k]=m[(st.gi*3+r)%m.length].u}}
- if(GAMES[g].k==="speed")Object.assign(o,{end:t+secs(g)*1000,tot:secs(g)*1000,sub:null});
- else{const tk=(st.tk??-1)+1;Object.assign(o,singer(tk),{tk,sub:"think",end:t+THINK,tot:THINK})}
+ const K=GAMES[g].k,TT=secs(g)*1000;o.imp=null;o.res=null;
+ if(K==="speed"||K==="all")Object.assign(o,{end:t+TT,tot:TT,sub:null});
+ else if(K==="turn"){const tk=(st.tk??-1)+1;Object.assign(o,singer(tk),{tk,sub:"think",end:t+THINK,tot:THINK})}
+ else if(K==="imp"){const l=sh(ps().filter(p=>onl(p.u)),Math.random),n=l.length>12?3:l.length>6?2:1,imp={};l.slice(0,n).forEach(p=>imp[p.u]=true);Object.assign(o,{imp,first:(l[Math.floor(Math.random()*l.length)]||{}).u||"",sub:"talk",end:t+TT,tot:TT})}
+ else{const tk=(st.tk??-1)+1;Object.assign(o,turnP(tk),{tk,sub:"play",end:t+TT,tot:TT})}
  return upd(o)}
+function turnP(tk){if(!team()){let l=ps().filter(p=>onl(p.u));if(!l.length)l=ps();const p=l[tk%Math.max(1,l.length)];return{sg:p?p.u:"",stm:-1}}const n=room.cfg.teams,tm=tk%n,m=members(tm);return{sg:m.length?m[Math.floor(tk/n)%m.length].u:"",stm:tm}}
+async function scoreImp(st){const P=room.players||{},imp=st.imp||{},c={},sc={},tc={},up={},add=(o,k,n)=>{o[k]=(o[k]||0)+n},T=team();
+ Object.entries(ans).forEach(([u,v])=>{if(P[u]&&v&&P[v.a])add(c,v.a,1)});
+ const mx=Math.max(0,...Object.values(c)),top=Object.keys(c).filter(k=>c[k]===mx),iL=Object.keys(imp).filter(u=>P[u]);let res;
+ if(top.length===1&&imp[top[0]]){Object.keys(P).forEach(u=>{if(!imp[u])add(sc,u,1)});if(T)new Set(Object.keys(P).filter(u=>!imp[u]&&P[u].t>=0).map(u=>P[u].t)).forEach(t=>add(tc,t,1));res=`Expulsado: <b>${esc(P[top[0]].n)}</b> → ¡Era impostor! 🎉 Gana el grupo (+1).`}
+ else{iL.forEach(u=>{add(sc,u,2);if(T&&P[u].t>=0)add(tc,P[u].t,2)});res=(mx===0?"Nadie ha votado.":top.length>1?"Empate en la votación.":`Expulsado: <b>${esc(P[top[0]].n)}</b> → No era impostor.`)+" 🕵️ Ganan los impostores (+2)."}
+ res+=`<br>Impostor${iL.length>1?"es":""}: <b>${iL.map(u=>esc(P[u].n)).join(", ")}</b><br><small class="muted">Votos: ${Object.entries(c).map(([u,n])=>esc(P[u].n)+" "+n).join(" · ")||"—"}</small>`;
+ for(const u in sc)up["sc/"+u]=SV.increment(sc[u]);for(const t in tc)up["sct/"+t]=SV.increment(tc[t]);if(Object.keys(up).length)await db.ref(`rooms/${code}`).update(up);
+ return upd({ph:"reveal",end:now()+9000,tot:9000,pz:false,win:null,res,sub:null})}
+async function tabuOk(st,g){const P=room.players||{},up={};if(st.sg)up["sc/"+st.sg]=SV.increment(1);if(g&&g!==st.sg&&P[g])up["sc/"+g]=SV.increment(1);if(team()&&st.stm>=0)up["sct/"+st.stm]=SV.increment(1);if(Object.keys(up).length)await db.ref(`rooms/${code}`).update(up);
+ return upd({ph:"reveal",end:now()+4500,tot:4500,pz:false,win:null,sub:null,res:`✓ ¡Acertada! +1 para ${esc(P[st.sg]?.n||"")}${g&&P[g]?" y "+esc(P[g].n):""}${team()&&st.stm>=0?" · Equipo "+tname(st.stm):""}`})}
 function singer(tk){if(!team()){let l=ps().filter(p=>onl(p.u));if(!l.length)l=ps();const p=l[tk%Math.max(1,l.length)];return{sg:p?p.u:"",stm:-1}}
  const n=room.cfg.teams,tm=tk%n,m=members(tm);return{sg:who("canta")==="one"&&m.length?m[Math.floor(tk/n)%m.length].u:"",stm:tm}}
 
@@ -1296,6 +1938,12 @@ const A={
   if(okA(v,it)){const rid=st.gi+"_"+st.r;db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:v,t:SV.TIMESTAMP});myFb=rid;i.value="";render()}
   else{const f=$("#fb");if(f)f.textContent="✗ No es correcta";i.select()}},
  pickAns(v){const st=room.st,rid=st.gi+"_"+st.r;if(myFb===rid||myFb===rid+"x"||myFb===rid+"s"||!canAns(me.uid,st))return;if(G().k==="all"){db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:v,t:SV.TIMESTAMP});myFb=rid+"s";myAns=v;return render()}const it=item(st.g,st.p,st.r);if(okA(v,it)){db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:v,t:SV.TIMESTAMP});myFb=rid}else myFb=rid+"x";render()},
+ vote(u){const st=room.st,rid=st.gi+"_"+st.r;if(myFb===rid+"s"||u===me.uid||st.sub!=="vote")return;db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:u,t:SV.TIMESTAMP});myFb=rid+"s";myAns=room.players[u]?.n||"";render()},
+ toVote(){upd({sub:"vote",end:now()+30000,tot:30000,pz:false})},
+ tbOk(g){const st=room.st,rid=st.gi+"_"+st.r;if(st.ph!=="round"||myFb===rid+"t")return;myFb=rid+"t";tabuOk(st,g||"")},
+ tbNo(v){const st=room.st,rid=st.gi+"_"+st.r;if(st.ph!=="round"||myFb===rid+"t")return;myFb=rid+"t";upd({ph:"reveal",end:now()+4500,tot:4500,pz:false,win:null,sub:null,res:v==="tabu"?"🚫 ¡Tabú! Se ha dicho una palabra prohibida":"⏭ Pasada"})},
+ qsOk(){const st=room.st,rid=st.gi+"_"+st.r;if(st.ph!=="round"||myFb===rid+"t")return;myFb=rid+"t";reveal({u:st.sg,t:st.stm})},
+ qsShow(){qsShown=room.st.gi+"_"+room.st.r;render()},
  pause(){const st=room.st;if(st.pz)upd({pz:false,end:now()+(st.rem||0)});else if(st.end)upd({pz:true,rem:Math.max(0,st.end-now())})},
  restart(){const st=room.st;if(!st.tot)return;if(st.sub==="judge")return upd({sub:"sing",end:now()+st.tot,pz:false});upd(st.pz?{rem:st.tot}:{end:now()+st.tot})},
  skipR(){if(room.st.ph==="round")reveal(null)},
@@ -1353,9 +2001,12 @@ function pickV(st,tv){const left=cfgGames().filter(g=>!(st.done||{})[g]);let nm=
  else{const l=ps(),p=l[st.pk%Math.max(1,l.length)];nm=p?p.n:"";mine=!tv&&p&&p.u===me.uid}
  const can=mine||(!tv&&amCtrl());
  return `<div class="box center"><h2>Elige el siguiente juego: ${esc(nm)}</h2>${can?left.map(g=>`<button class="pri" data-a="pick" data-v="${g}">${GAMES[g].n}</button>`).join(""):`<p class="muted">Quedan: ${left.map(g=>GAMES[g].n).join(", ")}</p>`}</div>`+score(true)}
-function introV(st){const g=GAMES[st.g]||{};return `<div class="box center"><div class="muted">Juego ${st.gi} de ${cfgGames().length}</div><h1>${g.n}</h1><p>${g.rules}</p>${team()?`<p class="muted">${who(st.g)==="one"?(g.k==="speed"?"Contesta un portavoz por equipo (va rotando)":"Canta uno por equipo (va rotando)"):(g.k==="speed"?"Puede contestar todo el equipo":"Canta todo el equipo")}</p>`:""}<div class="stage">${CLK}</div></div>`}
+function introV(st){const g=GAMES[st.g]||{};return `<div class="box center"><div class="muted">Juego ${st.gi} de ${cfgGames().length}</div><h1>${g.n}</h1><p>${g.rules}</p>${team()&&["speed","all","turn"].includes(g.k)?`<p class="muted">${who(st.g)==="one"?(g.k==="turn"?"Canta uno por equipo (va rotando)":"Contesta un portavoz por equipo (va rotando)"):(g.k==="turn"?"Canta todo el equipo":"Puede contestar todo el equipo")}</p>`:""}<div class="stage">${CLK}</div></div>`}
 function roundV(st,tv){const g=GAMES[st.g],it=item(st.g,st.p,st.r),hd=`<div class="muted center">${g.n} · Ronda ${st.r+1}/${ROUNDS}${st.pz?" · ⏸ Pausa":""}</div>`;
  if(g.k==="turn")return cantaV(st,tv,it,hd);
+ if(g.k==="imp")return impV(st,tv,it,hd);
+ if(g.k==="tabu")return tabuV(st,tv,it,hd);
+ if(g.k==="qs")return qsV(st,tv,it,hd);
  let h=`<div class="box">${hd}${it.h?`<div class="center" style="font-weight:700;font-size:1.15em">${it.h}</div>`:""}<div class="stage"><div class="big" style="${it.ink?`color:${it.ink};`:""}${it.lg?"font-size:clamp(1.3rem,6vw,2.4rem);letter-spacing:0":""}">${it.img?`<img src="${it.img}" alt="Bandera" style="width:min(280px,70vw);border-radius:8px;display:block;box-shadow:0 4px 18px #0008">`:""}${esc(it.q)}</div>${CLK}</div>`;
  if(!tv){const rid=st.gi+"_"+st.r,mp=room.players[me.uid];
   if(myFb===rid)h+=`<p class="center" style="color:var(--ok)">✓ ¡Correcta! Esperando…</p>`;
@@ -1364,6 +2015,25 @@ function roundV(st,tv){const g=GAMES[st.g],it=item(st.g,st.p,st.r),hd=`<div clas
   else if(canAns(me.uid,st)&&it.opts)h+=`<div class="row" style="justify-content:center">${it.opts.map(o=>`<button style="flex:1 1 40%;padding:18px;font-size:1.1em" data-a="pickAns" data-v="${o}">${o}</button>`).join("")}</div>`;
   else if(canAns(me.uid,st))h+=`<form data-f="ans" class="row"><input id="ans" type="text" ${st.g==="calculo"?'inputmode="numeric"':""} autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Tu respuesta"><button class="pri">Enviar</button></form><div id="fb" class="muted center"></div>`;
   else{const r=(st.resp||{})[mp?.t];h+=`<p class="muted center">${r?`Contesta <b>${esc(room.players[r]?.n||"?")}</b> por tu equipo`:"Mira la pantalla"}</p>`}}
+ return h+`</div>`+(tv?score(true):"")}
+function impV(st,tv,it,hd){const P=room.players,im=!tv&&(st.imp||{})[me.uid],C=!tv&&amCtrl(),fn=P[st.first]?.n||"",ni=Object.keys(st.imp||{}).length;
+ let h=`<div class="box center">${hd}`;
+ if(st.sub==="talk"){h+=tv?`<h2>Ronda de pistas</h2><div class="stage">${CLK}</div><p>Cada uno dice una palabra relacionada. Empieza <b>${esc(fn)}</b>.</p><p class="muted">Hay ${ni} impostor${ni>1?"es":""}</p>`:`<div class="stage"><div class="big" style="font-size:clamp(1.6rem,8vw,3rem)">${im?"🕵️ ERES EL IMPOSTOR":esc(cap(it.q))}</div>${CLK}</div><p>${im?"No sabes la palabra. Disimula y averigua cuál es.":"Da pistas sin decirla. Hay "+ni+" impostor"+(ni>1?"es":"")+"."}</p><p class="muted">Empieza <b>${esc(fn)}</b></p>`;if(C)h+=`<button class="pri" data-a="toVote">Pasar a votar</button>`}
+ else{const rid=st.gi+"_"+st.r;h+=`<h2>¡A votar! ¿Quién es el impostor?</h2><div class="stage">${CLK}</div>`;
+  if(!tv)h+=myFb===rid+"s"?`<p style="color:var(--ok)">✓ Has votado a <b>${esc(myAns)}</b></p>`:`<div class="row" style="justify-content:center">${ps().filter(p=>p.u!==me.uid).map(p=>`<button style="flex:1 1 40%" data-a="vote" data-v="${p.u}">${esc(p.n)}</button>`).join("")}</div>`}
+ return h+`</div>`+(tv?score(true):"")}
+function tabuV(st,tv,it,hd){const P=room.players,mp=P[me.uid],nm=P[st.sg]?.n||"?",D=!tv&&st.sg===me.uid,rival=!tv&&team()&&mp&&mp.t>=0&&mp.t!==st.stm,see=D||rival;
+ let h=`<div class="box center">${hd}<div>Describe <b>${esc(nm)}</b> ${team()?tdot(st.stm):""}</div>`;
+ h+=see?`<div class="stage"><div class="big">${esc(cap(it.q))}</div>${CLK}</div><div><span class="muted">Prohibidas:</span> ${it.tb.map(w=>`<b style="color:var(--bad)">${esc(w)}</b>`).join(" · ")}</div>`:`<div class="stage"><div class="big">?</div>${CLK}</div><p>¡Adivina${tv?"d":""} la palabra!</p>`;
+ if(D)h+=team()?`<div class="row" style="justify-content:center"><button class="ok" style="flex:1;padding:16px" data-a="tbOk">✓ Acertada</button><button style="flex:1;padding:16px" data-a="tbNo" data-v="pasa">Pasar</button></div>`:`<p class="muted">¿Quién la ha acertado?</p><div class="row" style="justify-content:center">${ps().filter(p=>p.u!==me.uid).map(p=>`<button class="ok" style="flex:1 1 40%" data-a="tbOk" data-v="${p.u}">${esc(p.n)}</button>`).join("")}</div><button data-a="tbNo" data-v="pasa">Pasar</button>`;
+ if(rival)h+=`<button class="bad" style="padding:16px" data-a="tbNo" data-v="tabu">🚫 ¡Tabú!</button>`;
+ return h+`</div>`+(tv?score(true):"")}
+function qsV(st,tv,it,hd){const P=room.players,nm=P[st.sg]?.n||"?",Gs=!tv&&st.sg===me.uid,C=!tv&&amCtrl(),rid=st.gi+"_"+st.r;
+ let h=`<div class="box center">${hd}<div>Adivina <b>${esc(nm)}</b> ${team()?tdot(st.stm):""}</div>`;
+ if(Gs&&qsShown!==rid)h+=`<div class="stage"><div class="big">?</div>${CLK}</div><p>📱 Ponte el móvil en la frente, mirando hacia los demás, y pulsa:</p><button class="pri" style="padding:20px;font-size:1.2em" data-a="qsShow">Ya lo tengo en la frente</button>`;
+ else{h+=`<div class="stage"><div class="big"${Gs?' style="font-size:clamp(2.6rem,14vw,5rem)"':""}>${esc(cap(it.q))}</div>${CLK}</div>`;
+  h+=Gs?"":tv?`<p><b>${esc(nm)}</b>, ¡no mires la tele!</p>`:`<p>Dale pistas a <b>${esc(nm)}</b> sin decir la palabra.</p>`;
+  if(Gs||C)h+=`<div class="row" style="justify-content:center"><button class="ok" style="flex:1;padding:18px" data-a="qsOk">✓ Acierto</button><button style="flex:1;padding:18px" data-a="tbNo" data-v="pasa">Paso</button></div>`}
  return h+`</div>`+(tv?score(true):"")}
 function cantaV(st,tv,it,hd){const nm=st.sg?(room.players[st.sg]?.n||"?"):"Equipo "+tname(st.stm),mp=room.players[me.uid],mine=!tv&&(st.sg?st.sg===me.uid:mp&&mp.t===st.stm),C=!tv&&amCtrl();
  const m={think:"¡Memoriza la palabra!",wait:"¿Preparado?",sing:"¡A cantar!",judge:"¡Tiempo! ¿La ha cantado?",fail:"No la ha cantado"}[st.sub]||"";
@@ -1376,7 +2046,7 @@ function cantaV(st,tv,it,hd){const nm=st.sg?(room.players[st.sg]?.n||"?"):"Equip
  return h+`</div>`+(tv?score(true):"")}
 function revealV(st){const g=GAMES[st.g]||{},it=item(st.g,st.p,st.r),w=st.win;let r="Nadie ha acertado";
  if(w){const x=[];if(w.u)x.push(esc(w.n));if(team()&&w.t>=0)x.push("Equipo "+tname(w.t));r="¡Punto para "+x.join(" · ")+"!"}
- return `<div class="box center"><div class="muted">${g.n} · Ronda ${st.r+1}/${ROUNDS}</div><div>${g.k==="turn"?"Palabra":st.g==="colmena"?"Tema":"Respuesta"}</div><div class="big"${st.g==="colmena"?' style="font-size:clamp(1.3rem,6vw,2.4rem)"':""}>${esc(st.g==="colmena"?it.q:cap(String(it.a).split("|").slice(0,3).join(", ")))}</div>${st.res?`<p style="font-size:1.1em">${st.res}</p>`:`<h2>${r}</h2>`}<div class="stage">${CLK}</div></div>`+score(true)}
+ return `<div class="box center"><div class="muted">${g.n} · Ronda ${st.r+1}/${ROUNDS}</div><div>${["turn","imp","tabu","qs"].includes(g.k)?"Palabra":st.g==="colmena"?"Tema":"Respuesta"}</div><div class="big"${st.g==="colmena"?' style="font-size:clamp(1.3rem,6vw,2.4rem)"':""}>${esc(st.g==="colmena"?it.q:cap(String(it.a).split("|").slice(0,3).join(", ")))}</div>${st.res?`<p style="font-size:1.1em">${st.res}</p>`:`<h2>${r}</h2>`}<div class="stage">${CLK}</div></div>`+score(true)}
 function gendV(st){return `<div class="box center"><h2>Fin de ${GAMES[st.g]?.n||"juego"}</h2><div class="stage">${CLK}</div></div>`+score(false)}
 function endV(st,tv){return `<h1>¡Fin de la sesión!</h1>`+score(false)+(tv?"":isHost()?`<button class="pri" data-a="again">Jugar otra sesión</button><button data-a="close">Cerrar sala</button>`:`<button data-a="out">Salir de la sala</button>`)}
 function score(c){const sc=room.sc||{},T=team(),l=ps().sort((a,b)=>(sc[b.u]||0)-(sc[a.u]||0));let h=`<div class="box"><h2>Marcador</h2>`;
