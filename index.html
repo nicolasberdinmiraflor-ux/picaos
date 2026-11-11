@@ -43,6 +43,17 @@ body.tv .lt{font-size:8rem}
 @keyframes lt{0%,100%{transform:scale(1);text-shadow:0 0 20px #ffcf3f55}45%{transform:scale(1.06) rotate(-2deg);text-shadow:0 0 45px #ffcf3fcc}50%{transform:scale(1.04) rotate(1deg)}}
 @keyframes lr{0%,38%,100%{transform:translateY(0) scale(1);opacity:.85;filter:drop-shadow(0 0 10px #ffcf3f88)}42%{transform:translateY(-6px) scale(1.35) rotate(-10deg);opacity:1;filter:drop-shadow(0 0 30px #fff) brightness(1.6)}46%{transform:scale(.9) rotate(8deg);opacity:.5}50%{transform:scale(1.25) rotate(-4deg);opacity:1;filter:drop-shadow(0 0 25px #ffcf3f)}60%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.lt,.lr{animation:none}}
+.pod{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin:10px 0 4px}
+.pod>div{flex:1;max-width:150px;text-align:center}
+.pod .bar{border-radius:12px 12px 0 0;display:grid;place-items:center;font-size:2em;font-weight:900;color:#1a1230;animation:grow 1s ease-out both}
+.pod .nm{font-weight:800;overflow-wrap:anywhere;margin-bottom:6px;animation:fade 1.4s ease-in both}
+@keyframes grow{from{transform:scaleY(0);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}
+@keyframes fade{0%,60%{opacity:0}to{opacity:1}}
+.conf{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:9}
+.conf i{position:absolute;top:-20px;width:10px;height:16px;border-radius:2px;animation:fall linear infinite}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.emo button{font-size:1.5em;padding:6px 8px;background:var(--bg)}
+@media (prefers-reduced-motion:reduce){.pod .bar,.pod .nm{animation:none}.conf{display:none}}
 </style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&display=swap"></head>
 <body><div id="app" class="wrap"><div class="logo"><div class="lt">PICAOS</div><div class="lr">⚡</div><div class="ll">Aquí se viene a ganar</div><div class="li">🔤 🎤 ➗ 🎨 🕵️ ❓</div></div><p class="center muted">Conectando…</p></div>
@@ -77,6 +88,7 @@ const GAMES={
  canta:{n:"Canta la palabra",k:"turn",secs:30,rules:"La palabra se ve 5 segundos. Después hay que cantar una canción que la lleve antes de que acabe el tiempo. El anfitrión decide si vale."}
 };
 const TEAMS=[["Rojo","#ff5d73"],["Azul","#4da3ff"],["Verde","#3fdc8f"],["Amarillo","#ffcf3f"]];
+const EMO=["😀","😎","🤠","🥳","🤓","😺","🐶","🦊","🐼","🐸","🦁","🐵","🐯","🐷","🐙","🦄","🐝","🍕","🌮","🍩","⚽","🎸","🚀","👑"];
 const ROUNDS=10,RDEF=5,PARTIDAS=50,MAXP=20,THINK=5000;
 
 let NOCFG=!FB.apiKey,auth,db,SV,off=0;
@@ -1750,12 +1762,22 @@ mapache:antifaz,basura,animal`.trim().split("\n").map(l=>{const[w,t]=l.split(":"
 const COLS=[["ROJO","#ff3b3b"],["AZUL","#3b82ff"],["VERDE","#22c55e"],["AMARILLO","#facc15"],["MORADO","#a855f7"],["NARANJA","#fb923c"],["ROSA","#f472b6"],["BLANCO","#ffffff"]];
 const cap=w=>String(w).charAt(0).toUpperCase()+String(w).slice(1);
 const sh=(a,rn)=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rn()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-let me=null,role="",code="",room={},refs=[],busy=false,booted=false,ansRef=null,ansRid="",ans={},myFb="",myAns="",picSteal=false,cv=null,cx=null,drRef=null,drRid="",drawing=null,pc={c:"#111111",w:5},qsShown="",tickT=null;
+let me=null,role="",code="",room={},refs=[],busy=false,booted=false,ansRef=null,ansRid="",ans={},myFb="",myAns="",lastBeep="",prevKey="",lastSpoke="",actx=null,picSteal=false,cv=null,cx=null,drRef=null,drRid="",drawing=null,pc={c:"#111111",w:5},qsShown="",tickT=null;
 
 // ---------- Contenido ----------
-function item(g,p,r){const i=p*ROUNDS+r,rn=R(i*7919+g.length*104729);
+const BAD=/\b(cerveza|vino|whiskey|wine|tequila|champagne|champan|alcohol|coctel|casino|ruleta|loteria|apostar|diablo|demonio|infierno|devil|hell|veneno|sangre|blood|muerte|muerto|death|die|gun|bullet|guerra|war|carcel|ladron|traicion|brindis|bar|bandido|monster|vampiro|vampire|cana|copa|disco|discoteca|cuchillo|espada|sword|arrow|bomba)\b/;
+const isBad=it=>BAD.test(String((it.q||"")+" "+(it.a||"")+" "+(it.opts||[]).join(" ")+" "+(it.h||"")).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase());
+const DIF=()=>room.cfg?.dif||"m";
+const EASY=new Set("ES FR DE IT PT GB IE US CA MX BR AR CL CO PE VE CU EC UY BO PY CR PA DO JP CN KR IN RU TR GR NL BE CH AT SE NO DK FI PL CZ HU RO UA MA EG ZA AU NZ SA AE TH VN PH ID NG KE SN DZ TN".split(" "));
+const PE=PAISES.filter(c=>EASY.has(c[0])),PH=PAISES.filter(c=>!EASY.has(c[0]));
+function item(g,p,r){const b=p*ROUNDS+r;if(!room.cfg?.fam)return itemI(g,b);for(let k=0;k<40;k++){const it=itemI(g,b+k*1009);if(!isBad(it))return it}return itemI(g,b)}
+function itemI(g,i){const rn=R(i*7919+g.length*104729);
  if(g==="huecos"){const w=PAL[i%PAL.length],L=[...w],o=sh([...L.keys()],rn),h=new Set(o.slice(0,Math.max(1,Math.round(L.length*.45))));return{q:L.map((c,j)=>h.has(j)?"_":c.toUpperCase()).join(" "),a:w}}
  if(g==="anagrama"){const w=PAL[(i+257)%PAL.length],U=w.toUpperCase(),L=[...U];for(let k=0;k<9;k++){sh(L,rn);if(L.join("")!==U)break}return{q:L.join(" "),a:w}}
+ if(g==="calculo"&&DIF()==="f"){const n=k=>Math.floor(rn()*k);let q,a;if(n(2)){const x=1+n(20),z=1+n(20);q=`${x} + ${z}`;a=x+z}else{const x=10+n(21),z=1+n(x-1);q=`${x} − ${z}`;a=x-z}return{q,a:String(a)}}
+ if(g==="calculo"&&DIF()==="d"){const n=k=>Math.floor(rn()*k),y=n(4);let q,a;
+  if(y===0){const x=11+n(15),z=3+n(10);q=`${x} × ${z}`;a=x*z}else if(y===1){const x=3+n(10),z=11+n(30);q=`${x*z} ÷ ${x}`;a=z}
+  else if(y===2){const x=3+n(9),z=3+n(9),w=10+n(90);q=`${x} × ${z} + ${w}`;a=x*z+w}else{const x=200+n(800),z=50+n(x-60);q=`${x} − ${z}`;a=x-z}return{q,a:String(a)}}
  if(g==="calculo"){const n=k=>Math.floor(rn()*k),y=n(5);let q,a;
   if(y===0){const x=10+n(90),z=10+n(90);q=`${x} + ${z}`;a=x+z}
   else if(y===1){const x=30+n(70),z=5+n(x-5);q=`${x} − ${z}`;a=x-z}
@@ -1763,12 +1785,12 @@ function item(g,p,r){const i=p*ROUNDS+r,rn=R(i*7919+g.length*104729);
   else if(y===3){const x=2+n(9),z=2+n(11);q=`${x*z} ÷ ${x}`;a=z}
   else{const x=5+n(40),z=5+n(40),w=2+n(9);q=`${x} + ${z} − ${w}`;a=x+z-w}
   return{q,a:String(a)}}
- if(g==="banderas"){const N=PAISES.length,[iso,pais,capi]=PAISES[(i*37)%N],t=(i+Math.floor(i/N))%3;
+ if(g==="banderas"){const PL=DIF()==="f"?PE:DIF()==="d"?PH:PAISES,N=PL.length,[iso,pais,capi]=PL[(i*37)%N],t=(i+Math.floor(i/N))%3;
   if(t===0)return{h:"¿De qué país es esta bandera?",img:"https://flagcdn.com/w320/"+iso.toLowerCase()+".png",q:"",a:pais};
   if(t===1)return{h:"¿Cuál es la capital de…?",q:pais.split("|")[0],a:capi};
   return{h:"¿De qué país es capital…?",q:capi.split("|")[0],a:pais}}
  if(g==="colores"){const C=COLS.length,w=Math.floor(rn()*C);let k=Math.floor(rn()*(C-1));if(k>=w)k++;const o=new Set([k,w]);while(o.size<4)o.add(Math.floor(rn()*C));return{h:"Pulsa el color de la TINTA",q:COLS[w][0],ink:COLS[k][1],a:COLS[k][0].toLowerCase(),opts:sh([...o].map(x=>COLS[x][0]),rn)}}
- if(g==="trivial"){const e=TQ[(i*53)%TQ.length];return{h:"Trivial",q:e[0],a:e[1],opts:sh(e.slice(1,5),rn),lg:1}}
+ if(g==="trivial"){const e=TQ[(i*53)%TQ.length];return{h:"Trivial",q:e[0],a:e[1],opts:sh(e.slice(1,DIF()==="f"?4:5),rn),lg:1}}
  if(g==="colmena")return{h:"Escribe lo que crees que dirá la mayoría",q:CM[(i*59)%CM.length],a:"",lg:1};
  if(g==="impostor"){const w=PAL[(i*61+97)%PAL.length];return{q:w,a:w}}
  if(g==="tabu"){const e=TB[(i*71)%TB.length];return{q:e[0],a:e[0],tb:e[1].split(",")}}
@@ -1796,7 +1818,7 @@ function arb(){const on=room.on||{};if(room.tv&&on[room.tv])return room.tv;if(on
 function ctrlU(){if(onl(room.host))return room.host;return ps().find(p=>onl(p.u))?.u}
 const amCtrl=()=>me&&ctrlU()===me.uid;
 function members(t){const all=ps().filter(p=>p.t===t),o=all.filter(p=>onl(p.u));return o.length?o:all}
-function defCfg(){const s={},w={},g={};for(const k in GAMES){s[k]=GAMES[k].secs;w[k]="all";g[k]=true}return{rondas:RDEF,mode:"ind",teams:2,form:"elegir",order:"rand",games:g,secs:s,who:w,lang:"mix"}}
+function defCfg(){const s={},w={},g={};for(const k in GAMES){s[k]=GAMES[k].secs;w[k]="all";g[k]=true}return{rondas:RDEF,mode:"ind",teams:2,form:"elegir",order:"rand",games:g,secs:s,who:w,lang:"mix",dif:"m",fam:0}}
 function qr(t,s){const el=$("#qr");if(!el||typeof QRCode==="undefined")return;el.innerHTML="";new QRCode(el,{text:t,width:s,height:s})}
 function msg(h){app.innerHTML=`<h1>PICAOS ⚡</h1><div class="box">${h}</div>`}
 function wake(){const w=()=>{try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}};w();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")w()})}
@@ -1813,10 +1835,12 @@ async function boot(){
  if(qs)return joinScreen(qs);
  home()}
 function home(){app.innerHTML=`<div class="logo"><div class="lt">PICAOS</div><div class="lr">⚡</div><div class="ll">Aquí se viene a ganar</div><div class="li">🔤 🎤 ➗ 🎨 🕵️ ❓</div></div><div class="box"><input id="jc" type="text" placeholder="Código de 4 letras" maxlength="4" style="text-transform:uppercase;text-align:center;font-size:1.3em"><button class="pri" data-a="goJoin">Unirme</button><button data-a="host">Crear sala</button><button data-a="tv" style="background:none;color:var(--muted)">📺 Modo tele</button></div>`}
-function joinScreen(c){app.innerHTML=`<h1>Sala ${esc(c)}</h1><div class="box"><label>Tu nombre</label><input id="nm" type="text" maxlength="16" value="${esc(localStorage.getItem("nombre")||"")}"><button class="pri" data-a="join" data-v="${esc(c)}">Entrar</button><div id="er" class="muted"></div></div>`}
+function myEmo(){let e="";try{e=localStorage.getItem("emo")||""}catch(x){}return EMO.includes(e)?e:EMO[Math.floor(Math.random()*EMO.length)]}
+function emoPick(){const e=myEmo();try{localStorage.setItem("emo",e)}catch(x){}return `<label>Tu avatar</label><div class="row emo">${EMO.map(x=>`<button data-a="emo" data-v="${x}" class="${x===e?"on":""}">${x}</button>`).join("")}</div>`}
+function joinScreen(c){app.innerHTML=`<h1>Sala ${esc(c)}</h1><div class="box"><label>Tu nombre</label><input id="nm" type="text" maxlength="16" value="${esc(localStorage.getItem("nombre")||"")}">${emoPick()}<button class="pri" data-a="join" data-v="${esc(c)}">Entrar</button><div id="er" class="muted"></div></div>`}
 function homeHost(pin){
  if(!me||me.isAnonymous){app.innerHTML=`<h1>Crear sala</h1><div class="box"><p>Para crear salas tienes que entrar con tu cuenta de Google.</p><button class="pri" data-a="login" data-v="${esc(pin)}">Entrar con Google</button></div>`;return}
- app.innerHTML=`<h1>Crear sala</h1><div class="box"><label>Tu nombre en el juego</label><input id="nm" type="text" maxlength="16" value="${esc(localStorage.getItem("nombre")||(me.displayName||"").split(" ")[0])}"><button class="pri" data-a="create" data-v="${esc(pin)}">Crear sala</button><div id="er" class="muted"></div></div>`}
+ app.innerHTML=`<h1>Crear sala</h1><div class="box"><label>Tu nombre en el juego</label><input id="nm" type="text" maxlength="16" value="${esc(localStorage.getItem("nombre")||(me.displayName||"").split(" ")[0])}">${emoPick()}<button class="pri" data-a="create" data-v="${esc(pin)}">Crear sala</button><div id="er" class="muted"></div></div>`}
 async function linkTv(c,pin){const s=await db.ref("pair/"+pin).get();if(!s.exists()||!s.val().tv)return alert("No encuentro esa tele. Revisa el PIN.");await db.ref(`rooms/${c}/tv`).set(s.val().tv);await db.ref(`pair/${pin}/room`).set(c)}
 function tvStart(){document.body.classList.add("tv");const pin=String(1000+Math.floor(Math.random()*9000)),r=db.ref("pair/"+pin),rr=r.child("room");
  r.set({tv:me.uid,t:SV.TIMESTAMP});r.onDisconnect().remove();
@@ -1847,7 +1871,7 @@ function tick(){if(!code||!room.st)return;clocks();if(room.st.g==="pictionary"&&
    else if(st.sub==="think"&&t>=st.end)run(()=>upd({sub:"wait",end:null}));
    else if(st.sub==="sing"&&t>=st.end)run(()=>upd({sub:"judge",end:null}));
    return;
-  case"reveal":if(st.end&&!st.pz&&t>=st.end)run(()=>st.r+1<NR()?startRound(st.r+1):upd({ph:"gend",end:t+8000,tot:8000}));return;
+  case"reveal":if(st.end&&!st.pz&&t>=st.end)run(()=>st.r+1<NR()?startRound(st.r+1):toGend());return;
   case"gend":if(!st.pz&&t>=st.end)run(nextGame);return}}
 const RID=st=>st.gi+"_"+st.r+(st.vr?"_"+st.vr:"");
 function listenAns(st){const rid=RID(st);if(rid===ansRid)return;if(ansRef)ansRef.off();ansRid=rid;ans={};ansRef=db.ref(`rooms/${code}/ans/${rid}`);ansRef.on("value",s=>ans=s.val()||{})}
@@ -1882,11 +1906,15 @@ async function nextGame(){const st=room.st,d=st.done||{},left=cfgGames().filter(
 function partida(g){const k="usadas_"+g;let u=[];try{u=JSON.parse(localStorage.getItem(k)||"[]")}catch(e){}
  let f=[...Array(PARTIDAS).keys()].filter(i=>!u.includes(i));if(!f.length){u=[];f=[...Array(PARTIDAS).keys()]}
  const p=f[Math.floor(Math.random()*f.length)];u.push(p);try{localStorage.setItem(k,JSON.stringify(u))}catch(e){}return p}
+function gendData(st){const sn=st.snap||{},sc=room.sc||{},P=room.players||{};let best="",bv=0;
+ if(team()){const ss=st.snapt||{},t=room.sct||{};for(let k=0;k<room.cfg.teams;k++){const d=(t[k]||0)-(ss[k]||0);if(d>bv){bv=d;best="Equipo "+tname(k)}}}
+ else for(const u in P){const d=(sc[u]||0)-(sn[u]||0);if(d>bv){bv=d;best=(P[u].e||"")+" "+P[u].n}}return best?`${best} (${bv})`:"Nadie"}
+function toGend(){const st=room.st;return upd({ph:"gend",end:now()+12000,tot:12000,pz:false,["hist/"+st.g]:gendData(st)})}
 async function beginGame(g){if(!GAMES[g])return nextGame();await db.ref(`rooms/${code}/ans`).remove();
- return upd({ph:"intro",g,p:partida(g),gi:(room.st.gi||0)+1,r:0,end:now()+6000,tot:6000,pz:false,win:null,sub:null,["done/"+g]:true})}
+ return upd({snap:room.sc||{},snapt:room.sct||{},ph:"intro",g,p:partida(g),gi:(room.st.gi||0)+1,r:0,end:now()+6000,tot:6000,pz:false,win:null,sub:null,["done/"+g]:true})}
 function startRound(r){const st=room.st,g=st.g,t=now(),o={ph:"round",r,pz:false,win:null,resp:null};
  if(team()){o.resp={};for(let k=0;k<room.cfg.teams;k++){const m=members(k);if(m.length)o.resp[k]=m[(st.gi*3+r)%m.length].u}}
- const K=GAMES[g].k,TT=secs(g)*1000;o.imp=null;o.res=null;o.vr=null;
+ const K=GAMES[g].k,TT=secs(g)*1000*(["trivial","banderas","calculo"].includes(g)?{f:1.5,m:1,d:.6}[DIF()]:1);o.imp=null;o.res=null;o.vr=null;
  if(K==="speed"||K==="all")Object.assign(o,{end:t+TT,tot:TT,sub:null});
  else if(K==="turn"){const tk=(st.tk??-1)+1;Object.assign(o,singer(tk),{tk,sub:"think",end:t+THINK,tot:THINK})}
  else if(K==="chain"){const tk=(st.tk??-1)+1,w0=item(g,st.p,r).q;Object.assign(o,turnP(tk),{tk,ti:tk,cw:w0,sy:lastSyl(w0),ch:[{w:w0,n:""}],used:[norm(w0)],lw:"",pw:"",sub:"play",end:t+TT,tot:TT})}
@@ -1941,12 +1969,12 @@ const A={
   const pv=pl.val()||{};if(Object.keys(pv).length>=MAXP)return er.textContent="La sala está llena (20 jugadores).";
   const cfg=cf.val()||{};let t=-1;
   if(cfg.mode==="eq"&&((s.val()||{}).ph!=="lobby"||cfg.form==="azar")){const cnt=Array(cfg.teams).fill(0);Object.values(pv).forEach(p=>{if(p.t>=0&&p.t<cfg.teams)cnt[p.t]++});t=cnt.indexOf(Math.min(...cnt))}
-  await db.ref(`rooms/${c}/players/${me.uid}`).set({n,j:SV.TIMESTAMP,t});enter(c)},
+  await db.ref(`rooms/${c}/players/${me.uid}`).set({n,e:myEmo(),j:SV.TIMESTAMP,t});enter(c)},
  login(pin){const p=new firebase.auth.GoogleAuthProvider();auth.signInWithPopup(p).then(r=>{me=r.user;homeHost(pin)}).catch(e=>{if(/popup/.test(e.code||"")){sessionStorage.setItem("intent",pin||"");auth.signInWithRedirect(p)}else alert(e.message)})},
  async create(pin){const n=$("#nm").value.trim();if(!n)return;localStorage.setItem("nombre",n);
   try{const old=await db.ref("rooms").orderByChild("host").equalTo(me.uid).get(),rm={};old.forEach(c=>{rm[c.key]=null});if(Object.keys(rm).length)await db.ref("rooms").update(rm);
    let c;do{c=Array.from({length:4},()=>"ABCDEFGHJKLMNPQRSTUVWXYZ"[Math.floor(Math.random()*24)]).join("")}while((await db.ref(`rooms/${c}/host`).get()).exists());
-   await db.ref(`rooms/${c}`).set({host:me.uid,c:SV.TIMESTAMP,cfg:defCfg(),players:{[me.uid]:{n,j:SV.TIMESTAMP,t:-1}},st:{ph:"lobby"}});
+   await db.ref(`rooms/${c}`).set({host:me.uid,c:SV.TIMESTAMP,cfg:defCfg(),players:{[me.uid]:{n,e:myEmo(),j:SV.TIMESTAMP,t:-1}},st:{ph:"lobby"}});
    if(pin)await linkTv(c,pin);enter(c)}
   catch(e){$("#er").textContent="No se pudo crear la sala. ¿Has entrado con la cuenta autorizada en las reglas? ("+e.message+")"}},
  linkTv(){const p=$("#pin").value.trim();if(p)linkTv(code,p)},
@@ -1989,7 +2017,10 @@ const A={
  pause(){const st=room.st;if(st.pz)upd({pz:false,end:now()+(st.rem||0)});else if(st.end)upd({pz:true,rem:Math.max(0,st.end-now())})},
  restart(){const st=room.st;if(!st.tot)return;if(st.sub==="judge")return upd({sub:"sing",end:now()+st.tot,pz:false});upd(st.pz?{rem:st.tot}:{end:now()+st.tot})},
  skipR(){if(room.st.ph==="round")reveal(null)},
- skipG(){upd({ph:"gend",end:now()+8000,tot:8000,pz:false})},
+ skipG(){toGend()},
+ revancha(){const g=room.st.g;if(g)beginGame(g)},
+ snd(){try{localStorage.setItem("snd",sndOn()?"0":"1")}catch(x){}render()},
+ emo(v){try{localStorage.setItem("emo",v)}catch(x){}document.querySelectorAll("[data-a=emo]").forEach(b=>b.classList.toggle("on",b.dataset.v===v))},
  endS(){if(confirm("¿Terminar la sesión?"))upd({ph:"end",end:null,pz:false})},
  cStart(){const s=secs("canta")*1000;upd({sub:"sing",end:now()+s,tot:s,pz:false})},
  cOk(){const st=room.st;reveal({u:st.sg||"",t:st.stm})},
@@ -2011,7 +2042,15 @@ app.addEventListener("change",e=>{const el=e.target.closest("[data-c]");if(!el)r
 
 // ---------- Vistas ----------
 const CLK=`<div class="clk"><b></b></div>`;
+function sndOn(){let v=null;try{v=localStorage.getItem("snd")}catch(x){}if(v!==null)return v==="1";return role==="tv"||!room.tv}
+function tone(f,d,ty="sine",v=.2,dl=0){if(!sndOn())return;try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();const t0=actx.currentTime+dl,o=actx.createOscillator(),g=actx.createGain();o.type=ty;o.frequency.value=f;o.connect(g);g.connect(actx.destination);g.gain.setValueAtTime(v,t0);g.gain.exponentialRampToValueAtTime(.001,t0+d);o.start(t0);o.stop(t0+d)}catch(x){}}
+const SFX={tick:()=>tone(880,.08),up:()=>tone(200,.5,"sawtooth",.15),ok:()=>{tone(660,.15);tone(990,.25,"sine",.2,.12)},end:()=>[523,659,784,1047].forEach((f,k)=>tone(f,.3,"triangle",.2,k*.15))};
+document.addEventListener("pointerdown",()=>{try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();actx.resume()}catch(x){}},{passive:true});
+function fx(){const st=room.st;if(!st)return;const k=st.ph+"|"+st.gi+"|"+st.r+"|"+(st.sub||"");if(k===prevKey)return;const pk=prevKey;prevKey=k;if(!pk)return;
+ if(st.ph==="reveal"&&st.sub!=="miss")(st.win||/✓|🎉|Acertada|adivinado|Aciertan/.test(st.res||"")?SFX.ok:SFX.up)();else if(st.ph==="end")SFX.end();
+ if(st.ph==="round"&&st.g==="trivial"&&sndOn()&&(role==="tv"||(!room.tv&&isHost()))&&"speechSynthesis"in window){const it=item(st.g,st.p,st.r);try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(it.q+" "+it.opts.join(", "));u.lang="es-ES";speechSynthesis.speak(u)}catch(x){}}}
 function clocks(){const st=room.st;if(!st)return;const rem=st.pz?st.rem:(st.end?st.end-now():null);
+ if(rem!=null&&!st.pz&&st.ph==="round"){const s=Math.ceil(rem/1000),bk=st.gi+"_"+st.r+"_"+s;if(s>=1&&s<=5&&bk!==lastBeep){lastBeep=bk;SFX.tick()}}
  document.querySelectorAll(".clk").forEach(el=>{if(rem==null){el.hidden=true;return}el.hidden=false;const s=Math.max(0,Math.ceil(rem/1000));el.querySelector("b").textContent=st.pz?"⏸":s;el.style.setProperty("--p",Math.max(0,Math.min(1,rem/(st.tot||1))));el.classList.toggle("low",s<=5&&!st.pz)})}
 function render(){if(!code||!room.st||!room.cfg||!room.players)return;
  if(role!=="tv"&&!room.players[me.uid])return leave("Ya no estás en la sala.");
@@ -2020,12 +2059,12 @@ function render(){if(!code||!room.st||!room.cfg||!room.players)return;
  let h=topBar()+(V?V(st,tv):`<div class="box center">Preparando…</div>`);
  if(!tv&&amCtrl()&&["pick","intro","round","reveal","gend"].includes(st.ph))h+=ctrlBar(st);
  app.innerHTML=h;
- picSync();const sl=$("#cvslot");if(sl)sl.appendChild(getCv());
+ fx();picSync();const sl=$("#cvslot");if(sl)sl.appendChild(getCv());
  const b=$("#ans");if(b){b.value=av;if(af)b.focus()}
  if($("#qr"))qr(BASE+"?sala="+code,tv?320:200);
  clocks()}
-function topBar(){const p=(room.players||{})[me.uid];return `<div class="row" style="justify-content:space-between"><b>Sala ${code}</b><span class="row">${p?esc(p.n):"Pantalla"} ${p&&team()&&p.t>=0?tdot(p.t)+tname(p.t):""}</span></div>`}
-function plist(kick){const T=team();return `<ul class="list">${ps().map(p=>`<li>${T?tdot(p.t):""}<span class="n">${esc(p.n)}${p.u===room.host?" ⭐":""}${onl(p.u)?"":' <span class="muted">(desconectado)</span>'}</span>${kick&&p.u!==me.uid?`<button data-a="kick" data-v="${p.u}" aria-label="Expulsar">✕</button>`:""}</li>`).join("")}</ul>`}
+function topBar(){const p=(room.players||{})[me.uid];return `<div class="row" style="justify-content:space-between"><b>Sala ${code}</b><span class="row">${p?(p.e||"")+" "+esc(p.n):"Pantalla"} <button data-a="snd" aria-label="Sonido" style="padding:4px 8px">${sndOn()?"🔊":"🔇"}</button> ${p&&team()&&p.t>=0?tdot(p.t)+tname(p.t):""}</span></div>`}
+function plist(kick){const T=team();return `<ul class="list">${ps().map(p=>`<li>${T?tdot(p.t):""}<span class="n">${p.e||""} ${esc(p.n)}${p.u===room.host?" ⭐":""}${onl(p.u)?"":' <span class="muted">(desconectado)</span>'}</span>${kick&&p.u!==me.uid?`<button data-a="kick" data-v="${p.u}" aria-label="Expulsar">✕</button>`:""}</li>`).join("")}</ul>`}
 function lobbyV(st,tv){const c=room.cfg,H=isHost()&&!tv,T=team();
  let h=`<div class="box center"><h2>Únete escaneando el código</h2><div id="qr"></div><div class="big">${code}</div><div class="muted">${esc(BASE)}?sala=${code}</div></div>`;
  if(!tv&&T&&c.form==="elegir"){const mt=room.players[me.uid].t;h+=`<div class="box"><h2>Elige equipo</h2><div class="row">${TEAMS.slice(0,c.teams).map((t,i)=>`<button data-a="team" data-v="${i}" class="${mt===i?"on":""}" style="background:${t[1]};color:#111">${t[0]}</button>`).join("")}</div></div>`}
@@ -2041,6 +2080,7 @@ function cfgV(c){const seg=(k,o)=>`<div class="row">${o.map(([v,l])=>`<button da
  for(const g in GAMES)h+=`<li><input type="checkbox" data-c="game" data-v="${g}" ${gs[g]?"checked":""} aria-label="${GAMES[g].n}"><span class="n">${GAMES[g].n}</span><input type="number" data-c="secs" data-v="${g}" value="${secs(g)}" min="5" max="300" step="5" aria-label="Segundos">${T?`<select data-c="who" data-v="${g}"><option value="all" ${who(g)==="all"?"selected":""}>Todo el equipo</option><option value="one" ${who(g)==="one"?"selected":""}>Solo uno</option></select>`:""}</li>`;
  const L=c.lang||"mix";
  h+=`</ul><label>Idioma en Canta la palabra</label><select data-c="lang"><option value="mix" ${L==="mix"?"selected":""}>Los dos</option><option value="es" ${L==="es"?"selected":""}>Español</option><option value="en" ${L==="en"?"selected":""}>Inglés</option></select>`;
+ h+=`<label>Dificultad (Trivial, Banderas y Cálculo)</label>${seg("dif",[["f","Fácil"],["m","Media"],["d","Difícil"]])}<label>Modo familia (sin alcohol, violencia…)</label>${seg("fam",[[0,"No"],[1,"Sí"]])}`;
  h+=room.tv?`<div class="muted">✓ Tele conectada</div>`:`<div class="row"><input id="pin" type="text" inputmode="numeric" placeholder="PIN de la tele"><button data-a="linkTv">Vincular tele</button></div>`;
  return h+`<button class="pri" data-a="start">¡Empezar!</button></div>`}
 function pickV(st,tv){const left=cfgGames().filter(g=>!(st.done||{})[g]);let nm="",mine=false;
@@ -2111,13 +2151,18 @@ function cantaV(st,tv,it,hd){const nm=st.sg?(room.players[st.sg]?.n||"?"):"Equip
 function revealV(st){if(st.g==="impostor"&&st.sub==="miss"){const C=role!=="tv"&&amCtrl();return `<div class="box center"><div class="muted">El impostor · Ronda ${st.r+1}/${NR()}</div><div class="big">🤫</div><p style="font-size:1.1em">${st.res||""}</p>${C?`<button class="pri" data-a="impAgain">🔁 Otra ronda con la misma palabra</button><button data-a="impRev">Revelar: ganan los impostores</button>`:`<p class="muted">El anfitrión decide si hay otra ronda…</p>`}</div>`+score(true)}const g=GAMES[st.g]||{},it=item(st.g,st.p,st.r),w=st.win;let r="Nadie ha acertado";
  if(w){const x=[];if(w.u)x.push(esc(w.n));if(team()&&w.t>=0)x.push("Equipo "+tname(w.t));r="¡Punto para "+x.join(" · ")+"!"}
  return `<div class="box center"><div class="muted">${g.n} · Ronda ${st.r+1}/${NR()}</div><div>${g.k==="chain"?"Palabra inicial":["turn","imp","tabu","qs","pic"].includes(g.k)?"Palabra":st.g==="colmena"?"Tema":"Respuesta"}</div><div class="big"${st.g==="colmena"?' style="font-size:clamp(1.3rem,6vw,2.4rem)"':""}>${esc(st.g==="colmena"?it.q:cap(String(it.a).split("|").slice(0,3).join(", ")))}</div>${st.g==="pictionary"?'<div id="cvslot" style="width:100%;max-width:380px;margin:auto"></div>':""}${st.res?`<p style="font-size:1.1em">${st.res}</p>`:`<h2>${r}</h2>`}<div class="stage">${CLK}</div></div>`+score(true)}
-function gendV(st){return `<div class="box center"><h2>Fin de ${GAMES[st.g]?.n||"juego"}</h2><div class="stage">${CLK}</div></div>`+score(false)}
-function endV(st,tv){return `<h1>¡Fin de la sesión!</h1>`+score(false)+(tv?"":isHost()?`<button class="pri" data-a="again">Jugar otra sesión</button><button data-a="close">Cerrar sala</button>`:`<button data-a="out">Salir de la sala</button>`)}
+function gendV(st,tv){return `<div class="box center"><h2>Fin de ${GAMES[st.g]?.n||"juego"}</h2><p>🏅 Gana: <b>${esc((st.hist||{})[st.g]||"")}</b></p><div class="stage">${CLK}</div>${!tv&&amCtrl()?`<button class="pri" data-a="revancha">🔁 Revancha: repetir este juego</button>`:""}</div>`+score(false)}
+function podium(){const sc=room.sc||{},T=team();let l;
+ if(T){const s=room.sct||{};l=[...Array(room.cfg.teams).keys()].map(t=>({n:"Equipo "+tname(t),c:TEAMS[t][1],p:s[t]||0}))}else l=ps().map(p=>({n:(p.e||"")+" "+p.n,c:"var(--accent)",p:sc[p.u]||0}));
+ l.sort((a,b)=>b.p-a.p);const o=[l[1],l[0],l[2]],H=[110,160,80],M=["🥈","🥇","🥉"];
+ return `<div class="pod">${o.map((x,k)=>x?`<div><div class="nm" style="animation-delay:${[.6,1,.3][k]}s">${M[k]}<br>${esc(x.n)}</div><div class="bar" style="height:${H[k]}px;background:${x.c};animation-delay:${[.3,.6,0][k]}s">${x.p}</div></div>`:"<div></div>").join("")}</div>`}
+function confetti(){const C=["#ffcf3f","#ff5d73","#4da3ff","#3fdc8f","#a855f7","#fb923c"];let h="";for(let k=0;k<70;k++)h+=`<i style="left:${Math.random()*100}%;background:${C[k%6]};animation-duration:${3+Math.random()*4}s;animation-delay:${-Math.random()*6}s"></i>`;return `<div class="conf" aria-hidden="true">${h}</div>`}
+function endV(st,tv){const hs=st.hist||{};return confetti()+`<h1>🏆 ¡Fin de la sesión!</h1><div class="box">${podium()}</div>`+(Object.keys(hs).length?`<div class="box"><h2>Resumen</h2><ul class="list">${Object.keys(hs).map(g=>`<li><span class="n">${GAMES[g]?.n||g}</span><b>${esc(hs[g])}</b></li>`).join("")}</ul></div>`:"")+score(false)+(tv?"":isHost()?`<button class="pri" data-a="again">Jugar otra sesión</button><button data-a="close">Cerrar sala</button>`:`<button data-a="out">Salir de la sala</button>`)}
 function score(c){const sc=room.sc||{},T=team(),l=ps().sort((a,b)=>(sc[b.u]||0)-(sc[a.u]||0));let h=`<div class="box"><h2>Marcador</h2>`;
  if(T){const s=room.sct||{},ts=[...Array(room.cfg.teams).keys()].sort((a,b)=>(s[b]||0)-(s[a]||0));
-  h+=`<ul class="list">${ts.map(t=>`<li>${tdot(t)}<span class="n">Equipo ${tname(t)}${c?"":`<br><small class="muted">${ps().filter(p=>p.t===t).map(p=>esc(p.n)+" "+(sc[p.u]||0)).join(" · ")}</small>`}</span><span class="p">${s[t]||0}</span></li>`).join("")}</ul>`;
-  if(!c&&l.length&&(sc[l[0].u]||0)>0)h+=`<div class="muted">⭐ MVP: ${esc(l[0].n)} (${sc[l[0].u]})</div>`}
- else h+=`<ul class="list">${(c?l.slice(0,5):l).map((p,i)=>`<li><span class="n">${i+1}. ${esc(p.n)}</span><span class="p">${sc[p.u]||0}</span></li>`).join("")}</ul>`;
+  h+=`<ul class="list">${ts.map(t=>`<li>${tdot(t)}<span class="n">Equipo ${tname(t)}${c?"":`<br><small class="muted">${ps().filter(p=>p.t===t).map(p=>(p.e||"")+esc(p.n)+" "+(sc[p.u]||0)).join(" · ")}</small>`}</span><span class="p">${s[t]||0}</span></li>`).join("")}</ul>`;
+  if(!c&&l.length&&(sc[l[0].u]||0)>0)h+=`<div class="muted">⭐ MVP: ${l[0].e||""} ${esc(l[0].n)} (${sc[l[0].u]})</div>`}
+ else h+=`<ul class="list">${(c?l.slice(0,5):l).map((p,i)=>`<li><span class="n">${i+1}. ${p.e||""} ${esc(p.n)}</span><span class="p">${sc[p.u]||0}</span></li>`).join("")}</ul>`;
  return h+`</div>`}
 function ctrlBar(st){const b=(a,l,c="")=>`<button class="${c}" data-a="${a}">${l}</button>`;
  return `<div class="ctrl">${st.end||st.pz||st.sub==="judge"?b("pause",st.pz?"▶ Reanudar":"⏸ Pausa")+b("restart","↺ Reiniciar tiempo"):""}${st.ph==="round"?b("skipR","⏭ Saltar ronda"):""}${["intro","round","reveal"].includes(st.ph)?b("skipG","⏩ Terminar juego"):""}${b("endS","■ Fin","bad")}</div>`}
