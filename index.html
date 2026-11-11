@@ -2,6 +2,13 @@
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Picaos</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#140f24">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Picaos">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23140f24'/><text x='50' y='72' font-size='64' text-anchor='middle'>⚡</text></svg>">
 <style>
 :root{--bg:#140f24;--panel:#211936;--line:#3a2f5a;--fg:#f4effc;--muted:#a99cc8;--accent:#ffcf3f;--ok:#3fdc8f;--bad:#ff5d73;color-scheme:dark}
@@ -2181,5 +2188,6 @@ function score(c){const sc=room.sc||{},T=team(),l=ps().sort((a,b)=>(sc[b.u]||0)-
  return h+`</div>`}
 function ctrlBar(st){const b=(a,l,c="")=>`<button class="${c}" data-a="${a}">${l}</button>`;
  return `<div class="ctrl">${st.end||st.pz||st.sub==="judge"?b("pause",st.pz?"▶ Reanudar":"⏸ Pausa")+b("restart","↺ Reiniciar tiempo"):""}${st.ph==="round"?b("skipR","⏭ Saltar ronda"):""}${["intro","round","reveal"].includes(st.ph)?b("skipG","⏩ Terminar juego"):""}${b("endS","■ Fin","bad")}</div>`}
+if("serviceWorker"in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body></html>
