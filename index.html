@@ -1775,7 +1775,7 @@ function item(g,p,r){const i=p*ROUNDS+r,rn=R(i*7919+g.length*104729);
  if(g==="quesoy"){const w=PAL[(i*67+211)%PAL.length];return{q:w,a:w}}
  if(g==="cadena"){const w=PAL[(i*73+5)%PAL.length];return{q:w,a:w}}
  if(g==="pictionary"){const w=PAL[(i*79+33)%PAL.length];return{q:w,a:w}}
- if(g==="sinon"){const e=SP[(i*41)%SP.length];return{h:e[0],q:e[1].toUpperCase(),a:e[2].split(",").join("|")}}
+ if(g==="sinon"){const e=SP[(i*41)%SP.length];const sn=e[0][0]==="S";return{h:`Escribe un <span style="background:${sn?"var(--ok)":"var(--bad)"};color:#111;padding:4px 14px;border-radius:99px;font-size:1.5em;font-weight:900">${sn?"SINÓNIMO":"ANTÓNIMO"}</span> de`,q:e[1].toUpperCase(),a:e[2].split(",").join("|")}}
  const lg=room.cfg?.lang||"mix",l=lg==="mix"?(i%2?"en":"es"):lg,li=l==="es"?CES:CEN,w=li[(lg==="mix"?i>>1:i)%li.length];return{q:w,a:w,l}}
 
 // ---------- Ayudas ----------
@@ -1847,9 +1847,10 @@ function tick(){if(!code||!room.st)return;clocks();if(room.st.g==="pictionary"&&
    else if(st.sub==="think"&&t>=st.end)run(()=>upd({sub:"wait",end:null}));
    else if(st.sub==="sing"&&t>=st.end)run(()=>upd({sub:"judge",end:null}));
    return;
-  case"reveal":if(!st.pz&&t>=st.end)run(()=>st.r+1<NR()?startRound(st.r+1):upd({ph:"gend",end:t+8000,tot:8000}));return;
+  case"reveal":if(st.end&&!st.pz&&t>=st.end)run(()=>st.r+1<NR()?startRound(st.r+1):upd({ph:"gend",end:t+8000,tot:8000}));return;
   case"gend":if(!st.pz&&t>=st.end)run(nextGame);return}}
-function listenAns(st){const rid=st.gi+"_"+st.r;if(rid===ansRid)return;if(ansRef)ansRef.off();ansRid=rid;ans={};ansRef=db.ref(`rooms/${code}/ans/${rid}`);ansRef.on("value",s=>ans=s.val()||{})}
+const RID=st=>st.gi+"_"+st.r+(st.vr?"_"+st.vr:"");
+function listenAns(st){const rid=RID(st);if(rid===ansRid)return;if(ansRef)ansRef.off();ansRid=rid;ans={};ansRef=db.ref(`rooms/${code}/ans/${rid}`);ansRef.on("value",s=>ans=s.val()||{})}
 function allAns(st){const el=ps().filter(p=>onl(p.u)&&canAns(p.u,st));return el.length>0&&el.every(p=>ans[p.u])}
 async function scoreAll(st){const it=item(st.g,st.p,st.r),T=team(),P=room.players||{},E=Object.entries(ans).filter(([u,v])=>v&&P[u]&&canAns(u,st)),up={},sc={},tc={},add=(o,k,n)=>{o[k]=(o[k]||0)+n};let res="";
  if(st.g==="trivial"){const ok=E.filter(([u,v])=>okA(v.a,it)).sort((a,b)=>(a[1].t||0)-(b[1].t||0));ok.forEach(([u])=>add(sc,u,1));if(ok.length)add(sc,ok[0][0],1);
@@ -1885,7 +1886,7 @@ async function beginGame(g){if(!GAMES[g])return nextGame();await db.ref(`rooms/$
  return upd({ph:"intro",g,p:partida(g),gi:(room.st.gi||0)+1,r:0,end:now()+6000,tot:6000,pz:false,win:null,sub:null,["done/"+g]:true})}
 function startRound(r){const st=room.st,g=st.g,t=now(),o={ph:"round",r,pz:false,win:null,resp:null};
  if(team()){o.resp={};for(let k=0;k<room.cfg.teams;k++){const m=members(k);if(m.length)o.resp[k]=m[(st.gi*3+r)%m.length].u}}
- const K=GAMES[g].k,TT=secs(g)*1000;o.imp=null;o.res=null;
+ const K=GAMES[g].k,TT=secs(g)*1000;o.imp=null;o.res=null;o.vr=null;
  if(K==="speed"||K==="all")Object.assign(o,{end:t+TT,tot:TT,sub:null});
  else if(K==="turn"){const tk=(st.tk??-1)+1;Object.assign(o,singer(tk),{tk,sub:"think",end:t+THINK,tot:THINK})}
  else if(K==="chain"){const tk=(st.tk??-1)+1,w0=item(g,st.p,r).q;Object.assign(o,turnP(tk),{tk,ti:tk,cw:w0,sy:lastSyl(w0),ch:[{w:w0,n:""}],used:[norm(w0)],lw:"",pw:"",sub:"play",end:t+TT,tot:TT})}
@@ -1914,14 +1915,15 @@ function wipe(){if(cx){cx.fillStyle="#fff";cx.fillRect(0,0,600,600)}}
 function picSync(){const st=room.st,rid=st&&st.g==="pictionary"&&(st.ph==="round"||st.ph==="reveal")?st.gi+"_"+st.r:"";if(rid===drRid)return;if(drRef){drRef.off();drRef=null}drRid=rid;drawing=null;getCv();wipe();if(!rid)return;
  drRef=db.ref(`rooms/${code}/ans/d${rid}`);drRef.on("child_added",x=>{const v=x.val();if(!v)return;if(v.clr)return wipe();seg(v.c,v.w,String(v.p).split(";").map(q=>q.split(",").map(Number)))})}
 function turnP(tk){if(!team()){let l=ps().filter(p=>onl(p.u));if(!l.length)l=ps();const p=l[tk%Math.max(1,l.length)];return{sg:p?p.u:"",stm:-1}}const n=room.cfg.teams;for(let k=0;k<n;k++){const tm=(tk+k)%n,m=members(tm);if(m.length)return{sg:m[Math.floor(tk/n)%m.length].u,stm:tm}}const l=ps();return{sg:l.length?l[tk%l.length].u:"",stm:-1}}
-async function scoreImp(st){const P=room.players||{},imp=st.imp||{},c={},sc={},tc={},up={},add=(o,k,n)=>{o[k]=(o[k]||0)+n},T=team();
+async function scoreImp(st){const P=room.players||{},imp=st.imp||{},c={},sc={},up={},add=(o,k,n)=>{o[k]=(o[k]||0)+n},T=team();
  Object.entries(ans).forEach(([u,v])=>{if(P[u]&&v&&P[v.a])add(c,v.a,1)});
- const mx=Math.max(0,...Object.values(c)),top=Object.keys(c).filter(k=>c[k]===mx),iL=Object.keys(imp).filter(u=>P[u]);let res;
- if(top.length===1&&imp[top[0]]){Object.keys(P).forEach(u=>{if(!imp[u])add(sc,u,1)});if(T)new Set(Object.keys(P).filter(u=>!imp[u]&&P[u].t>=0).map(u=>P[u].t)).forEach(t=>add(tc,t,1));res=`Expulsado: <b>${esc(P[top[0]].n)}</b> → ¡Era impostor! 🎉 Gana el grupo (+1).`}
- else{iL.forEach(u=>{add(sc,u,2);if(T&&P[u].t>=0)add(tc,P[u].t,2)});res=(mx===0?"Nadie ha votado.":top.length>1?"Empate en la votación.":`Expulsado: <b>${esc(P[top[0]].n)}</b> → No era impostor.`)+" 🕵️ Ganan los impostores (+2)."}
- res+=`<br>Impostor${iL.length>1?"es":""}: <b>${iL.map(u=>esc(P[u].n)).join(", ")}</b><br><small class="muted">Votos: ${Object.entries(c).map(([u,n])=>esc(P[u].n)+" "+n).join(" · ")||"—"}</small>`;
- for(const u in sc)up["sc/"+u]=SV.increment(sc[u]);for(const t in tc)up["sct/"+t]=SV.increment(tc[t]);if(Object.keys(up).length)await db.ref(`rooms/${code}`).update(up);
- return upd({ph:"reveal",end:now()+9000,tot:9000,pz:false,win:null,res,sub:null})}
+ const mx=Math.max(0,...Object.values(c)),top=Object.keys(c).filter(k=>c[k]===mx),iL=Object.keys(imp).filter(u=>P[u]),votos=`<br><small class="muted">Votos: ${Object.entries(c).map(([u,n])=>esc(P[u].n)+" "+n).join(" · ")||"—"}</small>`;
+ if(top.length===1&&imp[top[0]]){const tc={};Object.keys(P).forEach(u=>{if(!imp[u])add(sc,u,1)});if(T)new Set(Object.keys(P).filter(u=>!imp[u]&&P[u].t>=0).map(u=>P[u].t)).forEach(t=>add(tc,t,1));
+  for(const u in sc)up["sc/"+u]=SV.increment(sc[u]);for(const t in tc)up["sct/"+t]=SV.increment(tc[t]);if(Object.keys(up).length)await db.ref(`rooms/${code}`).update(up);
+  return upd({ph:"reveal",end:now()+9000,tot:9000,pz:false,win:null,sub:null,res:`Expulsado: <b>${esc(P[top[0]].n)}</b> → ¡Era impostor! 🎉 Gana el grupo (+1).<br>Impostor${iL.length>1?"es":""}: <b>${iL.map(u=>esc(P[u].n)).join(", ")}</b>`+votos})}
+ return upd({ph:"reveal",end:null,tot:null,pz:false,win:null,sub:"miss",res:(mx===0?"Nadie ha votado.":top.length>1?"Empate en la votación.":`Expulsado: <b>${esc(P[top[0]].n)}</b> → No era impostor.`)+" El impostor sigue escondido… 🤫"+votos})}
+async function impReveal(){const st=room.st,P=room.players||{},imp=st.imp||{},T=team(),up={},iL=Object.keys(imp).filter(u=>P[u]);iL.forEach(u=>{up["sc/"+u]=SV.increment(2);if(T&&P[u].t>=0)up["sct/"+P[u].t]=SV.increment(2)});if(Object.keys(up).length)await db.ref(`rooms/${code}`).update(up);
+ return upd({sub:null,end:now()+9000,tot:9000,res:`🕵️ Ganan los impostores (+2).<br>Impostor${iL.length>1?"es":""}: <b>${iL.map(u=>esc(P[u].n)).join(", ")}</b>`})}
 async function tabuOk(st,g){const P=room.players||{},up={};if(st.sg)up["sc/"+st.sg]=SV.increment(1);if(g&&g!==st.sg&&P[g])up["sc/"+g]=SV.increment(1);if(team()&&st.stm>=0)up["sct/"+st.stm]=SV.increment(1);if(Object.keys(up).length)await db.ref(`rooms/${code}`).update(up);
  return upd({ph:"reveal",end:now()+4500,tot:4500,pz:false,win:null,sub:null,res:`✓ ¡Acertada! +1 para ${esc(P[st.sg]?.n||"")}${g&&P[g]?" y "+esc(P[g].n):""}${team()&&st.stm>=0?" · Equipo "+tname(st.stm):""}`})}
 function singer(tk){if(!team()){let l=ps().filter(p=>onl(p.u));if(!l.length)l=ps();const p=l[tk%Math.max(1,l.length)];return{sg:p?p.u:"",stm:-1}}
@@ -1967,8 +1969,10 @@ const A={
   if(okA(v,it)){const rid=st.gi+"_"+st.r;db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:v,t:SV.TIMESTAMP});myFb=rid;i.value="";render()}
   else{const f=$("#fb");if(f)f.textContent="✗ No es correcta";i.select()}},
  pickAns(v){const st=room.st,rid=st.gi+"_"+st.r;if(myFb===rid||myFb===rid+"x"||myFb===rid+"s"||!canAns(me.uid,st))return;if(G().k==="all"){db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:v,t:SV.TIMESTAMP});myFb=rid+"s";myAns=v;return render()}const it=item(st.g,st.p,st.r);if(okA(v,it)){db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:v,t:SV.TIMESTAMP});myFb=rid}else myFb=rid+"x";render()},
- vote(u){const st=room.st,rid=st.gi+"_"+st.r;if(myFb===rid+"s"||u===me.uid||st.sub!=="vote")return;db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:u,t:SV.TIMESTAMP});myFb=rid+"s";myAns=room.players[u]?.n||"";render()},
+ vote(u){const st=room.st,rid=RID(st);if(myFb===rid+"s"||u===me.uid||st.sub!=="vote")return;db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:u,t:SV.TIMESTAMP});myFb=rid+"s";myAns=room.players[u]?.n||"";render()},
  impNext(){const st=room.st,o=st.ord||[];if(st.sub!=="talk"||!o.length)return;if(o[(st.oi||0)%o.length]!==me.uid&&!amCtrl())return;upd({oi:(st.oi||0)+1})},
+ impAgain(){const st=room.st;if(st.sub!=="miss")return;upd({ph:"round",sub:"talk",vr:(st.vr||0)+1,ord:sh(ps().filter(p=>onl(p.u)).map(p=>p.u),Math.random),oi:0,res:null,end:null,tot:null,pz:false})},
+ impRev(){if(room.st.sub==="miss")impReveal()},
  toVote(){upd({sub:"vote",end:now()+30000,tot:30000,pz:false})},
  tbOk(g){const st=room.st,rid=st.gi+"_"+st.r;if(st.ph!=="round"||myFb===rid+"t")return;myFb=rid+"t";tabuOk(st,g||"")},
  tbNo(v){const st=room.st,rid=st.gi+"_"+st.r;if(st.ph!=="round"||myFb===rid+"t")return;myFb=rid+"t";upd({ph:"reveal",end:now()+4500,tot:4500,pz:false,win:null,sub:null,res:v==="tabu"?"🚫 ¡Tabú! Se ha dicho una palabra prohibida":"⏭ Pasada"})},
@@ -2079,7 +2083,7 @@ function impV(st,tv,it,hd){const P=room.players,im=!tv&&(st.imp||{})[me.uid],C=!
   h+=`<h2>${!tv&&cur===me.uid?"🎤 ¡Te toca dar tu pista!":"Turno de pista: "+esc(P[cur]?.n||"")}</h2><div class="muted">Vuelta ${vu} · Orden: ${o.map((u,k)=>k===oi%o.length?`<b style="color:var(--accent)">${esc(P[u].n)}</b>`:esc(P[u].n)).join(" → ")}</div>`;
   if(!tv&&(cur===me.uid||C))h+=`<button style="padding:16px" data-a="impNext">Siguiente ▶</button>`;
   if(C)h+=`<button class="pri" data-a="toVote">Todos de acuerdo: ¡a votar!</button>`}
- else{const rid=st.gi+"_"+st.r;h+=`<h2>¡A votar! ¿Quién es el impostor?</h2><div class="stage">${CLK}</div>`;
+ else{const rid=RID(st);h+=`<h2>¡A votar! ¿Quién es el impostor?</h2><div class="stage">${CLK}</div>`;
   if(!tv)h+=myFb===rid+"s"?`<p style="color:var(--ok)">✓ Has votado a <b>${esc(myAns)}</b></p>`:`<div class="row" style="justify-content:center">${ps().filter(p=>p.u!==me.uid).map(p=>`<button style="flex:1 1 40%" data-a="vote" data-v="${p.u}">${esc(p.n)}</button>`).join("")}</div>`}
  return h+`</div>`+(tv?score(true):"")}
 function tabuV(st,tv,it,hd){const P=room.players,mp=P[me.uid],nm=P[st.sg]?.n||"?",D=!tv&&st.sg===me.uid,rival=!tv&&team()&&mp&&mp.t>=0&&mp.t!==st.stm,see=D||rival;
@@ -2104,7 +2108,7 @@ function cantaV(st,tv,it,hd){const nm=st.sg?(room.players[st.sg]?.n||"?"):"Equip
   if(st.sub==="sing"||st.sub==="judge")h+=`<div class="row" style="justify-content:center"><button class="ok" data-a="cOk">¡La ha cantado! +1</button><button class="bad" data-a="cFail">No la ha cantado</button></div>`;
   if(st.sub==="fail")h+=`<div class="row" style="justify-content:center"><button data-a="cReb">Rebote: misma palabra al siguiente</button><button class="pri" data-a="cNext">Siguiente palabra</button></div>`}
  return h+`</div>`+(tv?score(true):"")}
-function revealV(st){const g=GAMES[st.g]||{},it=item(st.g,st.p,st.r),w=st.win;let r="Nadie ha acertado";
+function revealV(st){if(st.g==="impostor"&&st.sub==="miss"){const C=role!=="tv"&&amCtrl();return `<div class="box center"><div class="muted">El impostor · Ronda ${st.r+1}/${NR()}</div><div class="big">🤫</div><p style="font-size:1.1em">${st.res||""}</p>${C?`<button class="pri" data-a="impAgain">🔁 Otra ronda con la misma palabra</button><button data-a="impRev">Revelar: ganan los impostores</button>`:`<p class="muted">El anfitrión decide si hay otra ronda…</p>`}</div>`+score(true)}const g=GAMES[st.g]||{},it=item(st.g,st.p,st.r),w=st.win;let r="Nadie ha acertado";
  if(w){const x=[];if(w.u)x.push(esc(w.n));if(team()&&w.t>=0)x.push("Equipo "+tname(w.t));r="¡Punto para "+x.join(" · ")+"!"}
  return `<div class="box center"><div class="muted">${g.n} · Ronda ${st.r+1}/${NR()}</div><div>${g.k==="chain"?"Palabra inicial":["turn","imp","tabu","qs","pic"].includes(g.k)?"Palabra":st.g==="colmena"?"Tema":"Respuesta"}</div><div class="big"${st.g==="colmena"?' style="font-size:clamp(1.3rem,6vw,2.4rem)"':""}>${esc(st.g==="colmena"?it.q:cap(String(it.a).split("|").slice(0,3).join(", ")))}</div>${st.g==="pictionary"?'<div id="cvslot" style="width:100%;max-width:380px;margin:auto"></div>':""}${st.res?`<p style="font-size:1.1em">${st.res}</p>`:`<h2>${r}</h2>`}<div class="stage">${CLK}</div></div>`+score(true)}
 function gendV(st){return `<div class="box center"><h2>Fin de ${GAMES[st.g]?.n||"juego"}</h2><div class="stage">${CLK}</div></div>`+score(false)}
