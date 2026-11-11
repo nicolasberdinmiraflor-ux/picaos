@@ -67,6 +67,8 @@ const GAMES={
  banderas:{n:"Banderas y capitales",k:"speed",secs:25,rules:"Sale una bandera, un país o una capital. Escribe lo que se pide. Gana el primero que acierte."},
  colores:{n:"Colores trampa",k:"speed",secs:8,rules:"Pulsa el COLOR DE LA TINTA, no lo que pone. Solo tienes un intento por ronda."},
  sinon:{n:"Sinónimos y antónimos",k:"speed",secs:30,rules:"Escribe un sinónimo o antónimo de la palabra. Gana el primero que acierte."},
+ trivial:{n:"Trivial",k:"all",secs:20,rules:"Pregunta con 4 opciones. Todos contestan una vez: acertar da 1 punto y el más rápido en acertar gana 1 extra."},
+ colmena:{n:"Mente colmena",k:"all",secs:30,rules:"Sale un tema y cada uno escribe lo primero que se le ocurra. Puntúas si coincides con la respuesta más repetida (en equipos, con la de tu equipo)."},
  canta:{n:"Canta la palabra",k:"turn",secs:30,rules:"La palabra se ve 5 segundos. Después hay que cantar una canción que la lleve antes de que acabe el tiempo. El anfitrión decide si vale."}
 };
 const TEAMS=[["Rojo","#ff5d73"],["Azul","#4da3ff"],["Verde","#3fdc8f"],["Amarillo","#ffcf3f"]];
@@ -78,6 +80,7 @@ const now=()=>Date.now()+off,Q=new URLSearchParams(location.search),BASE=locatio
 const $=s=>document.querySelector(s),app=$("#app");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const norm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[\s.\-'’,]+/g,"");
+const R=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
 const okA=(v,it)=>String(it.a).split("|").some(x=>norm(x)===norm(v));
 const PAISES=`AF:Afganistán:Kabul
 AL:Albania:Tirana
@@ -272,7 +275,7 @@ YE:Yemen:Saná
 DJ:Yibuti:Yibuti
 ZM:Zambia:Lusaka
 ZW:Zimbabue:Harare`.trim().split("\n").map(l=>l.split(":"));
-const SP=[];`rápido:veloz,ligero,raudo,pronto/lento,pausado,despacio
+const SP=[],SYNR=[];`rápido:veloz,ligero,raudo,pronto/lento,pausado,despacio
 grande:enorme,amplio,inmenso,gigante,extenso/pequeño,chico,diminuto
 alto:elevado,espigado/bajo
 feliz:contento,alegre,dichoso/triste,infeliz,desdichado
@@ -523,12 +526,606 @@ mojado:empapado,húmedo/seco
 cerrado:clausurado/abierto
 anterior:previo/posterior
 máximo:mayor,supremo/mínimo
-prudente:cauto,sensato/imprudente`.trim().split("\n").forEach(l=>{const[w,r]=l.split(":"),[s,a]=r.split("/");if(s)SP.push(["Sinónimo de",w,s]);if(a)SP.push(["Antónimo de",w,a])});
+prudente:cauto,sensato/imprudente`.trim().split("\n").forEach(l=>{const[w,r]=l.split(":"),[s,a]=r.split("/");SYNR.push([w,s,a]);if(s)SP.push(["Sinónimo de",w,s]);if(a)SP.push(["Antónimo de",w,a])});
+const TQ=`¿Cuál es el río más largo de la Península Ibérica?|Tajo|Ebro|Duero|Guadalquivir
+¿Cuál es el océano más grande?|Pacífico|Atlántico|Índico|Ártico
+¿Cuál es la montaña más alta del mundo?|Everest|K2|Kilimanjaro|Mont Blanc
+¿Cuál es el planeta más grande del sistema solar?|Júpiter|Saturno|Neptuno|Tierra
+¿Qué planeta es conocido como el planeta rojo?|Marte|Venus|Júpiter|Mercurio
+¿Cuál es el planeta más cercano al Sol?|Mercurio|Venus|Marte|Tierra
+¿Cuántas patas tiene una araña?|8|6|10|12
+¿Cuántas patas tiene un insecto?|6|8|4|10
+¿Cuál es el animal terrestre más rápido?|Guepardo|León|Gacela|Caballo
+¿Cuál es el mamífero más grande?|Ballena azul|Elefante africano|Cachalote|Jirafa
+¿Qué gas absorben las plantas para hacer la fotosíntesis?|Dióxido de carbono|Oxígeno|Nitrógeno|Helio
+¿Cuál es el símbolo químico del oro?|Au|Ag|Or|Go
+¿Cuál es la fórmula del agua?|H2O|CO2|O2|H2O2
+¿Cuántos huesos tiene un adulto humano?|206|186|226|256
+¿Qué órgano bombea la sangre?|Corazón|Hígado|Pulmón|Riñón
+¿Cuál es el órgano más grande del cuerpo humano?|Piel|Hígado|Cerebro|Intestino
+¿Quién pintó La Gioconda?|Leonardo da Vinci|Miguel Ángel|Rafael|Botticelli
+¿Quién pintó Las Meninas?|Velázquez|Goya|El Greco|Murillo
+¿Quién pintó el Guernica?|Picasso|Dalí|Miró|Goya
+¿Quién escribió Don Quijote de la Mancha?|Miguel de Cervantes|Lope de Vega|Quevedo|Calderón de la Barca
+¿Quién escribió Cien años de soledad?|Gabriel García Márquez|Mario Vargas Llosa|Julio Cortázar|Pablo Neruda
+¿Quién escribió Romeo y Julieta?|Shakespeare|Cervantes|Dickens|Molière
+¿En qué año llegó Colón a América?|1492|1498|1500|1488
+¿En qué año cayó el Muro de Berlín?|1989|1991|1985|1979
+¿En qué año empezó la Segunda Guerra Mundial?|1939|1936|1941|1945
+¿En qué año llegó el ser humano a la Luna?|1969|1965|1972|1959
+¿Quién fue el primer hombre en pisar la Luna?|Neil Armstrong|Buzz Aldrin|Yuri Gagarin|Michael Collins
+¿Quién fue el primer ser humano en viajar al espacio?|Yuri Gagarin|Neil Armstrong|John Glenn|Valentina Tereshkova
+¿Cuál es la capital de Australia?|Canberra|Sídney|Melbourne|Perth
+¿Cuál es la capital de Canadá?|Ottawa|Toronto|Montreal|Vancouver
+¿En qué país están las pirámides de Guiza?|Egipto|México|Perú|Sudán
+¿En qué ciudad está la Torre Eiffel?|París|Londres|Roma|Bruselas
+¿En qué ciudad está el Coliseo?|Roma|Atenas|Florencia|Nápoles
+¿En qué ciudad está la Sagrada Familia?|Barcelona|Madrid|Valencia|Sevilla
+¿En qué ciudad está la Alhambra?|Granada|Córdoba|Sevilla|Málaga
+¿En qué ciudad está la Giralda?|Sevilla|Córdoba|Toledo|Granada
+¿Cuántas comunidades autónomas tiene España?|17|15|19|16
+¿Cuántas provincias tiene España?|50|52|48|46
+¿Cuál es la comunidad autónoma más grande de España?|Castilla y León|Andalucía|Castilla-La Mancha|Aragón
+¿Cuál es el pico más alto de España?|Teide|Mulhacén|Aneto|Veleta
+¿Cuál es el pico más alto de la Península Ibérica?|Mulhacén|Aneto|Teide|Almanzor
+¿Qué mar baña Barcelona?|Mediterráneo|Cantábrico|Atlántico|Mar del Norte
+¿Qué mar baña Santander?|Cantábrico|Mediterráneo|Báltico|Adriático
+¿Cuál es la moneda de Japón?|Yen|Yuan|Won|Rupia
+¿Cuál es la moneda del Reino Unido?|Libra esterlina|Euro|Dólar|Corona
+¿Cuál era la moneda de España antes del euro?|Peseta|Real|Escudo|Doblón
+¿En qué año empezaron a circular los billetes y monedas de euro?|2002|1999|2000|2001
+¿Cuántos jugadores tiene un equipo de fútbol en el campo?|11|10|9|12
+¿Cuántos jugadores tiene un equipo de baloncesto en la pista?|5|6|7|4
+¿Cada cuántos años se celebran los Juegos Olímpicos de verano?|4|2|5|3
+¿Cuántos aros tiene la bandera olímpica?|5|4|6|7
+¿En qué deporte se habla de hacer un hoyo en uno?|Golf|Tenis|Billar|Críquet
+¿Qué selección ganó el Mundial de fútbol de 2010?|España|Países Bajos|Alemania|Brasil
+¿En qué país se celebró el Mundial de fútbol de 1982?|España|Italia|México|Argentina
+¿Cuánto dura un partido de fútbol sin prórroga?|90 minutos|80 minutos|100 minutos|60 minutos
+¿Cuántos puntos vale un triple en baloncesto?|3|2|4|1
+¿Cuántos sets hay que ganar en un partido masculino de Grand Slam?|3|2|4|5
+¿En qué ciudad se celebraron los Juegos Olímpicos de 1992?|Barcelona|Atlanta|Seúl|Madrid
+¿Cuál es el metal más abundante en la corteza terrestre?|Aluminio|Hierro|Cobre|Oro
+¿A qué temperatura hierve el agua a nivel del mar?|100 °C|90 °C|120 °C|80 °C
+¿A qué temperatura se congela el agua?|0 °C|-5 °C|4 °C|10 °C
+¿Cuál es la velocidad aproximada de la luz?|300 000 km/s|30 000 km/s|3000 km/s|3 000 000 km/s
+¿Qué científico formuló la teoría de la relatividad?|Einstein|Newton|Galileo|Tesla
+¿Quién descubrió la penicilina?|Alexander Fleming|Louis Pasteur|Marie Curie|Ramón y Cajal
+¿Qué español ganó el Nobel de Medicina en 1906?|Santiago Ramón y Cajal|Severo Ochoa|Gregorio Marañón|Juan de la Cierva
+¿Cuántos días tiene un año bisiesto?|366|365|364|367
+¿Cuántos minutos tiene un día?|1440|1240|1600|1000
+¿Cuántos segundos tiene una hora?|3600|360|6000|1200
+¿Cuánto es 7 × 8?|56|54|64|48
+¿Cuántos lados tiene un hexágono?|6|5|7|8
+¿Cuántos lados tiene un octógono?|8|6|10|7
+¿Cuánto suman los ángulos de un triángulo?|180°|360°|90°|270°
+¿Qué número es la L en números romanos?|50|100|500|10
+¿Qué número es la M en números romanos?|1000|500|100|5000
+¿Cuál es la raíz cuadrada de 144?|12|14|11|16
+¿Qué ave pone los huevos más grandes?|Avestruz|Emú|Águila|Gallina
+¿Cuál es el único mamífero capaz de volar de verdad?|Murciélago|Ardilla voladora|Colibrí|Pingüino
+¿Cuántos corazones tiene un pulpo?|3|1|2|4
+¿Cómo se llama la cría del caballo?|Potro|Ternero|Cordero|Cachorro
+¿Cómo se llama la cría de la vaca?|Ternero|Potro|Lechón|Cabrito
+¿Cuál de estos animales es un anfibio?|Rana|Serpiente|Tortuga|Lagarto
+¿Cuál de estos animales es un mamífero?|Delfín|Tiburón|Pingüino|Atún
+¿De qué se alimenta principalmente el panda gigante?|Bambú|Eucalipto|Pescado|Frutas
+¿De qué se alimenta el koala?|Eucalipto|Bambú|Insectos|Bayas
+¿Cuál es el ave más grande del mundo?|Avestruz|Cóndor|Albatros|Emú
+¿Qué color sale al mezclar azul y amarillo?|Verde|Morado|Naranja|Marrón
+¿Qué color sale al mezclar rojo y azul?|Morado|Verde|Naranja|Rosa
+¿Qué color sale al mezclar rojo y amarillo?|Naranja|Verde|Morado|Marrón
+¿Cuántos colores tiene el arcoíris?|7|6|8|5
+¿Qué idioma tiene más hablantes nativos en el mundo?|Chino mandarín|Inglés|Español|Hindi
+¿Qué país sudamericano tiene el portugués como idioma oficial?|Brasil|Argentina|Chile|Perú
+¿Cuál es el país más grande del mundo?|Rusia|Canadá|China|Estados Unidos
+¿Cuál es el desierto cálido más grande del mundo?|Sahara|Gobi|Kalahari|Atacama
+¿Cuál es el río más largo de Europa?|Volga|Danubio|Rin|Tajo
+¿Por qué ciudad pasa el Támesis?|Londres|París|Viena|Dublín
+¿Por qué ciudad pasa el Sena?|París|Lyon|Bruselas|Londres
+¿Qué río pasa por Sevilla?|Guadalquivir|Guadiana|Tajo|Ebro
+¿Qué río pasa por Zaragoza?|Ebro|Duero|Tajo|Júcar
+¿Qué río pasa por Madrid?|Manzanares|Tajo|Duero|Henares
+¿Qué río pasa por Toledo?|Tajo|Duero|Guadiana|Ebro
+¿Qué río pasa por Valladolid?|Pisuerga|Ebro|Tajo|Tormes
+¿En qué isla está el Teide?|Tenerife|Gran Canaria|La Palma|Lanzarote
+¿Cuál es la isla más grande de Baleares?|Mallorca|Menorca|Ibiza|Formentera
+¿Cuál es la capital de La Rioja?|Logroño|Haro|Calahorra|Nájera
+¿Cuál es la capital de Cantabria?|Santander|Torrelavega|Laredo|Castro Urdiales
+¿Cuál es la capital de Extremadura?|Mérida|Badajoz|Cáceres|Plasencia
+¿Cuál es la capital de Galicia?|Santiago de Compostela|A Coruña|Vigo|Lugo
+¿Dónde tiene su sede el Gobierno vasco?|Vitoria-Gasteiz|Bilbao|San Sebastián|Pamplona
+¿Cuál es la capital de Asturias?|Oviedo|Gijón|Avilés|León
+¿Cuál es la capital de Navarra?|Pamplona|Tudela|Estella|Logroño
+¿Cuál es la capital de Aragón?|Zaragoza|Huesca|Teruel|Jaca
+¿En qué ciudad está el Museo Guggenheim de España?|Bilbao|San Sebastián|Madrid|Valencia
+¿En qué ciudad está el Museo del Prado?|Madrid|Barcelona|Sevilla|Toledo
+¿En qué ciudad está la Ciudad de las Artes y las Ciencias?|Valencia|Barcelona|Málaga|Alicante
+¿En qué ciudad está la Mezquita-Catedral?|Córdoba|Granada|Sevilla|Toledo
+¿En qué ciudad está el famoso acueducto romano?|Segovia|Mérida|Tarragona|Toledo
+¿En qué fiesta se corren los encierros de Pamplona?|San Fermín|Las Fallas|La Tomatina|Feria de Abril
+¿En qué ciudad se celebran las Fallas?|Valencia|Alicante|Castellón|Murcia
+¿En qué pueblo se celebra La Tomatina?|Buñol|Requena|Xàtiva|Alzira
+¿Qué día se celebra Sant Jordi?|23 de abril|24 de junio|12 de octubre|6 de enero
+¿Qué día es la Fiesta Nacional de España?|12 de octubre|6 de diciembre|2 de mayo|1 de noviembre
+¿Qué día es el Día de la Constitución en España?|6 de diciembre|12 de octubre|8 de diciembre|1 de mayo
+¿En qué año se aprobó la Constitución española?|1978|1975|1982|1977
+¿En qué año murió Franco?|1975|1978|1973|1970
+¿En qué año empezó la Guerra Civil española?|1936|1931|1939|1934
+¿Quiénes fueron los Reyes Católicos?|Isabel y Fernando|Felipe y Juana|Carlos e Isabel|Alfonso y Leonor
+¿En qué año se inauguró el Metro de Madrid?|1919|1909|1929|1935
+¿Cuál fue la primera línea del Metro de Madrid?|Línea 1|Línea 2|Línea 3|Línea 6
+¿De qué color es la línea 1 del Metro de Madrid?|Azul claro|Roja|Amarilla|Verde
+¿Cómo se llama la línea 12 del Metro de Madrid?|MetroSur|MetroNorte|MetroEste|MetroOeste
+¿De qué color es la línea 6 del Metro de Madrid?|Gris|Verde|Morada|Naranja
+¿De qué color es la línea 2 del Metro de Madrid?|Roja|Azul|Verde|Amarilla
+¿De qué color es la línea 3 del Metro de Madrid?|Amarilla|Roja|Verde|Marrón
+¿De qué color es la línea 5 del Metro de Madrid?|Verde|Gris|Amarilla|Azul
+¿Qué instrumento tocaba Paco de Lucía?|Guitarra|Piano|Violín|Cajón
+¿Cuántas cuerdas tiene una guitarra española?|6|4|5|7
+¿Cuántas teclas tiene un piano estándar?|88|76|92|64
+¿Quién compuso la Quinta Sinfonía?|Beethoven|Mozart|Bach|Vivaldi
+¿Quién compuso Las cuatro estaciones?|Vivaldi|Mozart|Beethoven|Chopin
+¿Qué grupo cantaba Yellow Submarine?|The Beatles|The Rolling Stones|Queen|ABBA
+¿Quién era el cantante de Queen?|Freddie Mercury|Mick Jagger|David Bowie|Elton John
+¿De qué país es el grupo ABBA?|Suecia|Noruega|Dinamarca|Finlandia
+¿Qué película ganó 11 Óscar en 1998?|Titanic|Gladiator|Forrest Gump|Braveheart
+¿Quién dirigió Tiburón y E.T.?|Steven Spielberg|George Lucas|James Cameron|Ridley Scott
+¿En qué saga aparece Darth Vader?|Star Wars|Star Trek|Matrix|Alien
+¿Cómo se llama el mago protagonista de los libros de J. K. Rowling?|Harry Potter|Frodo|Merlín|Gandalf
+¿Quién escribió El Señor de los Anillos?|Tolkien|C. S. Lewis|J. K. Rowling|George R. R. Martin
+¿Quién dirigió Todo sobre mi madre?|Pedro Almodóvar|Alejandro Amenábar|Luis Buñuel|Fernando Trueba
+¿Qué actor español ganó el Óscar por No es país para viejos?|Javier Bardem|Antonio Banderas|Jordi Mollà|Eduardo Noriega
+¿Cuántos jugadores tiene un equipo de voleibol en pista?|6|5|7|4
+¿En qué deporte destacó Rafa Nadal?|Tenis|Pádel|Golf|Fútbol
+¿Qué torneo de tenis se juega sobre tierra batida en París?|Roland Garros|Wimbledon|US Open|Open de Australia
+¿Sobre qué superficie se juega Wimbledon?|Hierba|Tierra batida|Pista dura|Moqueta
+¿Cuántos jugadores tiene un equipo de rugby a XV en el campo?|15|11|13|12
+¿Cuántos kilómetros mide aproximadamente un maratón?|42|21|50|38
+¿De qué país es originaria la pizza?|Italia|Grecia|Francia|Estados Unidos
+¿De qué país es originario el sushi?|Japón|China|Corea|Tailandia
+¿Cuál es el ingrediente principal del guacamole?|Aguacate|Tomate|Pimiento|Calabacín
+¿Cuál es el ingrediente principal del gazpacho?|Tomate|Pepino|Calabaza|Remolacha
+¿Qué plato de arroz es típico de Valencia?|Paella|Risotto|Arroz tres delicias|Pilaf
+¿De qué fruto seco se hace el turrón clásico?|Almendra|Avellana|Cacahuete|Nuez
+¿Qué fruto seco es la base del mazapán?|Almendra|Nuez|Pistacho|Avellana
+¿De qué animal se obtiene el jamón ibérico?|Cerdo|Jabalí|Cordero|Ternera
+¿Qué vitamina produce el cuerpo al tomar el sol?|Vitamina D|Vitamina C|Vitamina A|Vitamina B12
+¿Qué fruta es famosa por su vitamina C?|Naranja|Plátano|Manzana|Uva
+¿Con qué legumbre se hace el hummus?|Garbanzo|Lenteja|Judía|Guisante
+¿De qué país es típica la feijoada?|Brasil|Portugal|México|Cuba
+¿De qué país es típico el ceviche?|Perú|México|Cuba|España
+¿A quién se atribuye la primera bombilla eléctrica práctica?|Thomas Edison|Nikola Tesla|Graham Bell|Isaac Newton
+¿Quién patentó el teléfono en 1876?|Graham Bell|Edison|Marconi|Morse
+¿Quién inventó la imprenta de tipos móviles en Europa?|Gutenberg|Leonardo da Vinci|Galileo|Newton
+¿Qué inventor español creó el autogiro?|Juan de la Cierva|Isaac Peral|Narciso Monturiol|Leonardo Torres Quevedo
+¿Qué inventó Isaac Peral?|Un submarino|Un avión|Un tren|Un teléfono
+¿Qué científico formuló la ley de la gravitación universal?|Isaac Newton|Galileo|Einstein|Copérnico
+¿Quién propuso que la Tierra gira alrededor del Sol?|Copérnico|Ptolomeo|Aristóteles|Platón
+¿Cuál es la estrella más cercana a la Tierra?|El Sol|Alfa Centauri|Sirio|La Estrella Polar
+¿Cuántos planetas tiene el sistema solar?|8|9|7|10
+¿Qué planeta tiene los anillos más visibles?|Saturno|Júpiter|Urano|Neptuno
+¿Cuánto tarda la Tierra en dar una vuelta al Sol?|Un año|Un mes|Un día|Una semana
+¿Cuánto tarda la Tierra en girar sobre sí misma?|Un día|Un año|Un mes|Una hora
+¿Qué capa protege la Tierra de los rayos ultravioleta?|Capa de ozono|Ionosfera|Magnetosfera|Troposfera
+¿Cuál es el gas más abundante en el aire?|Nitrógeno|Oxígeno|Dióxido de carbono|Argón
+¿Qué elemento químico tiene el símbolo O?|Oxígeno|Oro|Osmio|Ozono
+¿Cuál es el símbolo químico del hierro?|Fe|Hi|Ir|F
+¿Cuál es el símbolo químico de la plata?|Ag|Pt|Pl|Au
+¿Cuál es el símbolo químico del sodio?|Na|So|S|Sd
+¿Qué grupo sanguíneo es el donante universal?|0 negativo|AB positivo|A positivo|B negativo
+¿Cuántos dientes tiene una dentadura adulta completa?|32|28|30|36
+¿Qué parte del ojo tiene color?|Iris|Pupila|Córnea|Retina
+¿Cuántos cromosomas tiene una célula humana normal?|46|23|48|44
+¿Qué científica ganó dos premios Nobel?|Marie Curie|Rosalind Franklin|Ada Lovelace|Jane Goodall
+¿Qué unidad mide la intensidad de corriente?|Amperio|Voltio|Vatio|Ohmio
+¿Qué unidad mide la tensión eléctrica?|Voltio|Amperio|Ohmio|Julio
+¿Qué unidad mide la resistencia eléctrica?|Ohmio|Voltio|Faradio|Henrio
+¿Qué unidad mide la potencia?|Vatio|Julio|Newton|Pascal
+¿Cuál es la frecuencia de la red eléctrica en España?|50 Hz|60 Hz|100 Hz|25 Hz
+¿Cuál es la tensión habitual de los enchufes en España?|230 V|125 V|110 V|400 V
+¿Qué significan las siglas PLC en automatización?|Controlador lógico programable|Panel de luces central|Programa lineal de control|Puerto lógico de comunicación
+¿Qué significan las siglas CPU?|Unidad central de procesamiento|Centro de programas útiles|Control de potencia unificado|Circuito principal de usuario
+¿Cuántos bits tiene un byte?|8|4|16|10
+¿Quién fundó Microsoft junto a Paul Allen?|Bill Gates|Steve Jobs|Mark Zuckerberg|Larry Page
+¿Qué empresa creó el iPhone?|Apple|Samsung|Nokia|Google
+¿En qué año se presentó el primer iPhone?|2007|2005|2009|2010
+¿Qué significa www en las direcciones web?|World Wide Web|Web World Wide|World Web Window|Wide World Web
+¿Qué red social tuvo durante años un pájaro azul como logo?|Twitter|Facebook|Instagram|TikTok
+¿Cuál es el hueso más largo del cuerpo humano?|Fémur|Tibia|Húmero|Peroné
+¿Qué músculo es el principal para respirar?|Diafragma|Bíceps|Abdominal|Pectoral
+¿Cuántas cavidades tiene el corazón humano?|4|2|3|5
+¿Qué país tiene forma de bota?|Italia|Grecia|Chile|Portugal
+¿Qué país es conocido como el país del sol naciente?|Japón|China|Corea del Sur|Tailandia
+¿En qué país está Machu Picchu?|Perú|Bolivia|Chile|Ecuador
+¿En qué país está Chichén Itzá?|México|Guatemala|Perú|Honduras
+¿En qué país está la Gran Muralla?|China|Japón|Mongolia|India
+¿En qué país está el Taj Mahal?|India|Pakistán|Irán|Bangladés
+¿En qué ciudad está la Estatua de la Libertad?|Nueva York|Washington|Boston|Filadelfia
+¿En qué ciudad está el Big Ben?|Londres|Edimburgo|Dublín|Mánchester
+¿En qué ciudad está la Puerta de Brandeburgo?|Berlín|Múnich|Viena|Praga
+¿En qué ciudad está la Acrópolis?|Atenas|Roma|Estambul|Esparta
+¿En qué ciudad está el Cristo Redentor?|Río de Janeiro|São Paulo|Lima|Buenos Aires
+¿Qué canal une el Atlántico y el Pacífico?|Canal de Panamá|Canal de Suez|Canal de la Mancha|Canal de Kiel
+¿Qué estrecho separa España de África?|Estrecho de Gibraltar|Estrecho de Magallanes|Bósforo|Estrecho de Bering
+¿En qué continente está Kenia?|África|Asia|América|Oceanía
+¿En qué continente está Mongolia?|Asia|Europa|África|Oceanía
+¿Cuál es el lago más grande de África?|Victoria|Tanganica|Chad|Malaui
+¿Cuál es la catarata más alta del mundo?|Salto Ángel|Cataratas del Niágara|Cataratas Victoria|Cataratas del Iguazú
+¿Cuál es el río más caudaloso del mundo?|Amazonas|Nilo|Misisipi|Yangtsé
+¿Qué cordillera separa España de Francia?|Pirineos|Alpes|Cárpatos|Montes Cantábricos
+¿Cuál es la cordillera más larga del mundo?|Andes|Himalaya|Montañas Rocosas|Alpes
+¿Qué país tiene más hablantes de español?|México|España|Colombia|Argentina
+¿Cuántas estrellas tiene la bandera de la Unión Europea?|12|15|27|10
+¿Cuál es la capital de Estados Unidos?|Washington|Nueva York|Los Ángeles|Chicago
+¿Cuál es la capital de Brasil?|Brasilia|Río de Janeiro|São Paulo|Salvador
+¿Cuál es la capital de Turquía?|Ankara|Estambul|Esmirna|Antalya
+¿Cuál es la capital de Suiza?|Berna|Zúrich|Ginebra|Basilea
+¿Cuál es la capital de Marruecos?|Rabat|Casablanca|Marrakech|Fez
+¿Cuál es la capital de Nueva Zelanda?|Wellington|Auckland|Christchurch|Queenstown
+¿Quién fue el primer presidente de Estados Unidos?|George Washington|Abraham Lincoln|Thomas Jefferson|John Adams
+¿Qué emperador francés fue derrotado en Waterloo?|Napoleón|Luis XIV|Carlomagno|Luis XVI
+¿En qué año empezó la Revolución francesa?|1789|1776|1812|1804
+¿Qué civilización construyó Machu Picchu?|Inca|Maya|Azteca|Olmeca
+¿Qué ciudad sepultó el Vesubio en el año 79?|Pompeya|Roma|Nápoles|Atenas
+¿Quién fue el primer emperador romano?|Augusto|Julio César|Nerón|Trajano
+¿En qué batalla de 1805 venció la flota británica a la franco-española?|Trafalgar|Lepanto|Waterloo|Bailén
+¿En qué año fue la batalla de Lepanto?|1571|1492|1588|1640
+¿Qué rey de España fue también emperador del Sacro Imperio?|Carlos I|Felipe II|Fernando VII|Alfonso X
+¿Cómo se conoce la flota que Felipe II envió contra Inglaterra?|Armada Invencible|Gran Flota|Armada Real|Flota de Indias
+¿Quién completó la primera vuelta al mundo tras morir Magallanes?|Juan Sebastián Elcano|Cristóbal Colón|Hernán Cortés|Vasco da Gama
+¿Quién conquistó el imperio azteca?|Hernán Cortés|Francisco Pizarro|Elcano|Núñez de Balboa
+¿Quién encabezó la conquista del imperio inca?|Francisco Pizarro|Hernán Cortés|Pedro de Valdivia|Hernando de Soto
+¿Qué día se celebra la Navidad?|25 de diciembre|24 de diciembre|6 de enero|1 de enero
+¿Qué día llegan los Reyes Magos?|6 de enero|25 de diciembre|1 de enero|31 de diciembre
+¿Cuántas uvas se toman en Nochevieja en España?|12|10|7|24
+¿Desde dónde se retransmiten las campanadas de Nochevieja en Madrid?|Puerta del Sol|Plaza Mayor|Cibeles|Gran Vía
+¿Dónde está el Kilómetro Cero de las carreteras españolas?|Puerta del Sol|Plaza de Castilla|Atocha|Cibeles
+¿Qué animal aparece en el escudo de Madrid junto al madroño?|Oso|León|Toro|Águila
+¿Cómo se llama el parque más famoso del centro de Madrid?|El Retiro|Casa de Campo|Parque del Oeste|Madrid Río
+¿Qué equipo juega en el estadio Santiago Bernabéu?|Real Madrid|Atlético de Madrid|Getafe|Rayo Vallecano
+¿Qué selección ganó la Eurocopa de 2008?|España|Alemania|Italia|Francia
+¿Qué país ha ganado más Mundiales de fútbol masculino?|Brasil|Alemania|Italia|Argentina
+¿Cuántas Eurocopas masculinas había ganado España hasta 2024 incluida?|4|3|2|5
+¿Qué ciclista español ganó cinco Tours de Francia seguidos?|Miguel Induráin|Alberto Contador|Pedro Delgado|Carlos Sastre
+¿En qué deporte destacó Pau Gasol?|Baloncesto|Balonmano|Fútbol|Waterpolo
+¿En qué deporte destacó Fernando Alonso?|Fórmula 1|MotoGP|Rally|Ciclismo
+¿En qué deporte destacó Marc Márquez?|Motociclismo|Fórmula 1|Ciclismo|Rally
+¿En qué deporte destacó Severiano Ballesteros?|Golf|Tenis|Ciclismo|Atletismo
+¿En qué deporte destacó Carolina Marín?|Bádminton|Tenis|Natación|Judo
+¿Cuánto mide una piscina olímpica?|50 metros|25 metros|100 metros|75 metros
+¿Cuál es la carrera de velocidad más corta del atletismo olímpico?|100 metros|60 metros|200 metros|50 metros
+¿Qué animal es Simba en El Rey León?|León|Tigre|Guepardo|Leopardo
+¿Cómo se llama el muñeco de madera al que le crece la nariz?|Pinocho|Geppetto|Peter Pan|Hansel
+¿Qué personaje pierde un zapato de cristal?|Cenicienta|Blancanieves|Aurora|Rapunzel
+¿Cuántos enanitos acompañan a Blancanieves?|7|5|6|8
+¿Cómo se llama el niño que no quería crecer?|Peter Pan|Pinocho|Oliver Twist|Tom Sawyer
+¿Quién escribió La casa de Bernarda Alba?|Federico García Lorca|Antonio Machado|Miguel Hernández|Valle-Inclán
+¿Quién escribió Platero y yo?|Juan Ramón Jiménez|Antonio Machado|García Lorca|Unamuno
+¿Quién escribió La Celestina?|Fernando de Rojas|Cervantes|Lope de Vega|Quevedo
+¿Quién escribió Rimas y leyendas?|Gustavo Adolfo Bécquer|Espronceda|Zorrilla|Rosalía de Castro
+¿Quién escribió Don Juan Tenorio?|José Zorrilla|Tirso de Molina|Espronceda|Lope de Vega
+¿A quién se atribuye La Odisea?|Homero|Virgilio|Sófocles|Platón
+¿Quién escribió 1984?|George Orwell|Aldous Huxley|Ray Bradbury|H. G. Wells
+¿Quién escribió El principito?|Antoine de Saint-Exupéry|Julio Verne|Victor Hugo|Albert Camus
+¿Quién escribió La vuelta al mundo en 80 días?|Julio Verne|H. G. Wells|Mark Twain|Charles Dickens
+¿Quién pintó La noche estrellada?|Van Gogh|Monet|Picasso|Gauguin
+¿Quién pintó El jardín de las delicias?|El Bosco|Velázquez|Goya|Rubens
+¿Quién pintó Los fusilamientos del 3 de mayo?|Goya|Velázquez|Sorolla|Zurbarán
+¿Qué pintor es famoso por sus relojes blandos?|Salvador Dalí|Joan Miró|Picasso|Magritte
+¿Quién esculpió el David de mármol de Florencia?|Miguel Ángel|Donatello|Bernini|Rodin
+¿Quién pintó la bóveda de la Capilla Sixtina?|Miguel Ángel|Leonardo da Vinci|Rafael|Tiziano
+¿Qué arquitecto diseñó la Sagrada Familia?|Antoni Gaudí|Santiago Calatrava|Rafael Moneo|Domènech i Montaner
+¿En qué ciudad nació Picasso?|Málaga|Barcelona|Madrid|Sevilla
+¿Cuál es el idioma oficial de Brasil?|Portugués|Español|Brasileño|Inglés
+¿Qué idioma se habla principalmente en Austria?|Alemán|Austriaco|Francés|Húngaro
+¿Qué letra tiene el alfabeto español que no tiene el inglés?|Ñ|Q|W|K
+¿Cuántas letras tiene el abecedario español?|27|26|28|29
+¿Cuál es el plural de el lunes?|Los lunes|Los luneses|Los lunos|Las lunes
+¿Qué es un palíndromo?|Una palabra que se lee igual al revés|Una palabra con muchos significados|Una palabra sin vocales|Una palabra muy larga
+¿Cuál de estas palabras es aguda?|Canción|Árbol|Lápiz|Música
+¿Cuál de estas palabras es esdrújula?|Música|Canción|Árbol|Reloj
+¿Cuántos años tiene un siglo?|100|1000|10|50
+¿Cuántos años son un lustro?|5|10|4|15
+¿Cuántos años son una década?|10|5|100|20
+¿Cuántos años se celebran en unas bodas de oro?|50|25|75|40
+¿Cuántos años se celebran en unas bodas de plata?|25|50|10|30
+¿Cuántos gramos tiene un kilo?|1000|100|10000|500
+¿Cuántos centímetros tiene un metro?|100|10|1000|50
+¿Cuántos litros caben en un metro cúbico?|1000|100|10|10000
+¿Qué pesa más, un kilo de hierro o un kilo de paja?|Pesan lo mismo|El hierro|La paja|Depende del tamaño
+¿Cuántos meses tienen 28 días?|12|1|2|6
+Si tienes 3 manzanas y coges 2, ¿cuántas tienes?|2|1|3|0
+¿Cuál es el número primo más pequeño?|2|1|3|0
+¿Cuánto es el 10 % de 250?|25|15|50|10
+¿Cuánto es la mitad de un cuarto?|Un octavo|Un medio|Un tercio|Un sexto
+¿Cuántos ceros tiene un millón?|6|5|7|9
+¿Cuántos ceros tiene un billón en español?|12|9|6|15
+¿Cuántos grados mide un ángulo recto?|90°|180°|45°|60°
+¿Cuántas caras tiene un cubo?|6|4|8|12
+¿Cuántas aristas tiene un cubo?|12|8|6|10
+¿Qué forma tiene la señal de stop?|Octógono|Hexágono|Círculo|Triángulo
+¿Qué color del semáforo indica precaución?|Ámbar|Verde|Rojo|Azul
+¿Cuál es el número de emergencias general en España y la UE?|112|091|061|080
+¿Qué número es el de la Policía Nacional en España?|091|092|062|080
+¿Cuál es el prefijo telefónico de España?|+34|+33|+44|+39
+¿Qué animal es Bambi?|Ciervo|Conejo|Caballo|Zorro
+¿Qué animal hiberna en invierno?|Oso|Lobo|Ciervo|Zorro
+¿Qué animal cambia de color para camuflarse?|Camaleón|Iguana|Salamandra|Tortuga
+¿Qué animal es famoso por su lentitud?|Perezoso|Koala|Elefante|Canguro
+¿Dónde lleva el canguro a su cría?|En una bolsa|En un nido|En una madriguera|En la espalda
+¿Qué insecto se cría para obtener seda?|Gusano de seda|Mosca|Hormiga|Mariquita
+¿Qué producen las abejas?|Miel|Seda|Leche|Lana
+¿Cuántos años puede vivir una tortuga gigante?|Más de 100|20|50|10
+¿Qué animal tiene trompa?|Elefante|Rinoceronte|Hipopótamo|Jirafa
+¿Cuál es el animal más alto del mundo?|Jirafa|Elefante|Avestruz|Camello
+¿Cuántas jorobas tiene un dromedario?|1|2|3|0
+¿De qué se alimenta sobre todo la ballena azul?|Krill|Peces grandes|Algas|Focas
+¿Qué animal es el rey de la selva según el dicho?|León|Tigre|Gorila|Elefante`.trim().split("\n").map(l=>l.split("|"));
+{const gr=R(4242),N=PAISES.length;let j=0;while(TQ.length<520){if(j%2===0){const c=PAISES[(j*13)%N],ca=c[2].split("|")[0],pa=c[1].split("|")[0];if(norm(ca)!==norm(pa)){const w=new Set();while(w.size<3){const o=PAISES[Math.floor(gr()*N)][2].split("|")[0];if(norm(o)!==norm(ca))w.add(o)}TQ.push(["¿Cuál es la capital de "+pa+"?",ca,...w])}}else{const e=SYNR[(j*7)%SYNR.length];if(e[1]&&e[2]){TQ.push(["¿Qué palabra es sinónimo de "+e[0].toUpperCase()+"?",e[1].split(",")[0],e[2].split(",")[0],...(()=>{const w=new Set();while(w.size<2)w.add(PAL[Math.floor(gr()*PAL.length)]);return[...w]})()])}}j++}}
+const CM=[...new Set([...`Una fruta roja
+Un animal de granja
+Algo que se lleva a la playa
+Un deporte con pelota
+Una marca de coches
+Un color
+Una prenda de invierno
+Un instrumento musical
+Un animal de la selva
+Una comida de Navidad
+Un postre
+Una bebida
+Algo que se hace los domingos
+Un superhéroe
+Una ciudad de España
+Un país de Europa
+Una capital europea
+Una fruta tropical
+Una verdura verde
+Algo que da miedo
+Algo amarillo
+Un electrodoméstico
+Un mueble del salón
+Un juego de mesa
+Un deporte de invierno
+Una profesión con uniforme
+Algo que se lleva en la cartera
+Una app del móvil
+Una red social
+Una película de dibujos animados
+Un animal marino
+Un insecto
+Un pájaro
+Un animal doméstico
+Un medio de transporte
+Algo que vuela
+Algo redondo
+Algo frío
+Algo caliente
+Algo que hace ruido
+Algo que huele bien
+Algo que huele mal
+Algo pegajoso
+Un ingrediente de la paella
+Un ingrediente de la pizza
+Un tipo de pan
+Un embutido
+Un queso
+Algo para meter en un bocadillo
+Un plato típico español
+Una tapa de bar
+Una comida rápida
+Algo que se come con cuchara
+Algo que se come con las manos
+Un sabor de helado
+Una golosina
+Algo que se desayuna
+Una fiesta del año
+Un regalo de cumpleaños
+Algo que hay en una boda
+Algo de un cumpleaños infantil
+Un villancico
+Un juego de patio
+Un juguete clásico
+Unos dibujos animados de los 80 o 90
+Una serie de televisión famosa
+Un concurso de televisión
+Un cantante español
+Una cantante
+Un grupo de música
+Un estilo de música
+Un baile
+Un futbolista
+Un equipo de fútbol español
+Un tenista
+Un deporte olímpico
+Algo que se usa en el gimnasio
+Una parte del coche
+Una herramienta
+Algo eléctrico
+Algo que funciona con pilas
+Algo que tiene pantalla
+Algo que tiene botones
+Algo que tiene ruedas
+Algo que tiene alas
+Algo con agujeros
+Algo de cristal
+Algo de madera
+Algo de metal
+Algo de plástico
+Algo de papel
+Algo que se rompe fácilmente
+Algo que se pierde a menudo
+Algo que se olvida al irse de viaje
+Algo que se mete en la maleta
+Un país para ir de vacaciones
+Una isla
+Una playa española
+Un monumento famoso
+Un río
+Una montaña
+Un planeta
+Algo que hay en el cielo
+Un fenómeno meteorológico
+Una estación del año
+Un mes del año
+Un día de la semana
+Una palabra en inglés
+Un saludo
+Una despedida
+Algo que dice un profesor
+Algo que dice una madre
+Algo que dice un abuelo
+Una excusa para llegar tarde
+Algo que hace un bebé
+Algo que hace un perro
+Algo que hace un gato
+Un nombre de perro
+Un nombre de gato
+Un apellido español
+Un número del 1 al 10
+Un número de la suerte
+Una letra del abecedario
+Una forma geométrica
+Una asignatura
+Algo que hay en un estuche
+Un idioma
+Una nacionalidad
+Un continente
+Un océano
+Un animal del zoo
+Un animal que da miedo
+Un animal pequeño
+Un animal grande
+Un reptil
+Un pez
+Un marisco
+Una flor
+Un árbol
+Una planta de interior
+Un fruto seco
+Una especia
+Una salsa
+Algo dulce
+Algo salado
+Algo picante
+Algo ácido
+Una bebida caliente
+Una bebida con alcohol
+Un cóctel
+Un refresco
+Una marca de ropa
+Una marca de tecnología
+Un supermercado
+Una tienda de centro comercial
+Algo que se hace en verano
+Algo que se hace en invierno
+Algo que se hace en Navidad
+Algo que se hace antes de dormir
+Algo que se hace al despertar
+Una tarea de casa
+Una afición
+Un trabajo duro
+Un trabajo bonito
+Un trabajo de noche
+Algo que hace un bombero
+Una atracción de feria
+Un personaje de cuento
+Un villano famoso
+Un personaje histórico
+Un rey o una reina
+Un invento importante
+Un científico famoso
+Un pintor famoso
+Un escritor famoso
+Un libro famoso
+Una película de miedo
+Una película de risa
+Un actor famoso
+Una actriz famosa
+Un personaje de videojuego
+Un videojuego
+Una consola
+Algo que se hace con el móvil
+Un emoji
+Una palabra cariñosa
+Algo romántico
+Un regalo de San Valentín
+Un sitio para una primera cita
+Algo que da suerte
+Algo que da mala suerte
+Algo que se hace en una fiesta
+Una canción del verano
+Una canción para bailar
+Un refrán
+Una comida que no gusta a los niños
+Una comida que gusta a todo el mundo
+Algo que se come en el cine
+Algo que se pide en un bar
+Algo que hay en la mesa de un restaurante
+Algo que se lleva en la mochila
+Algo que se lleva en el bolso
+Algo que se pone en la cabeza
+Algo que se pone en los pies
+Un accesorio
+Una joya
+Un peinado
+Una parte de la cara
+Una parte del cuerpo
+Un órgano del cuerpo
+Algo que se hace cuando estás resfriado
+Una palabra que rime con amor
+Una palabra que rime con canción
+Un animal que vive en el agua
+Un animal con rayas
+Un animal con manchas
+Un animal nocturno
+Algo que se encuentra en el campo
+Algo que se ve desde la ventana
+Algo que hay en un despacho
+Algo que se enchufa
+Algo que se recicla
+Algo que se lava
+Algo que se dobla
+Algo que se abre y se cierra
+Algo que se infla
+Algo que brilla
+Algo blando
+Algo duro
+Algo largo
+Algo pequeño
+Algo enorme
+Algo caro
+Algo barato
+Algo viejo
+Algo que se colecciona
+Un deporte de raqueta
+Un deporte de agua
+Un deporte de motor
+Un juego de cartas
+Una carta de la baraja española
+Un palo de la baraja española
+Un dulce típico de una fiesta
+Un plato de cuchara
+Algo que se pone en la ensalada
+Algo que se echa al café
+Algo que hay en una tostada
+Una fruta de verano
+Una fruta de invierno
+Algo que hace un mecánico
+Algo que se compra en la ferretería
+Un número de teléfono famoso
+Una calle famosa de Madrid
+Una estación de metro de Madrid
+Un barrio de Madrid
+Algo típico de Madrid`.trim().split("\n"),
+ ...["rojo","azul","verde","amarillo","blanco","negro","naranja","rosa"].map(c=>"Algo de color "+c),
+ ..."la cocina|el baño|la playa|un colegio|una oficina|un hospital|un parque|un coche|la nevera|una mochila|el supermercado|el cine|el gimnasio|un aeropuerto|el zoo|una granja|el bosque|el circo|una discoteca|el dormitorio|la montaña|un estadio|una biblioteca|una iglesia|un hotel|un tren|un barco|un avión|un museo|la piscina|un camping|un restaurante|un bar|una peluquería|una farmacia|el metro|una estación|un jardín|el garaje|el salón".split("|").map(l=>"Algo que hay en "+l),
+ ...["Un animal","Una fruta o verdura","Un país","Una ciudad","Un nombre de chico","Un nombre de chica","Una profesión","Una comida","Un deporte","Un objeto de casa","Una marca","Una prenda de ropa","Un cantante o grupo","Una película"].flatMap(c=>[..."ABCDEFGLMPRSTV"].map(l=>c+" que empiece por "+l))])];
 const COLS=[["ROJO","#ff3b3b"],["AZUL","#3b82ff"],["VERDE","#22c55e"],["AMARILLO","#facc15"],["MORADO","#a855f7"],["NARANJA","#fb923c"],["ROSA","#f472b6"],["BLANCO","#ffffff"]];
 const cap=w=>String(w).charAt(0).toUpperCase()+String(w).slice(1);
-const R=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
 const sh=(a,rn)=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rn()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-let me=null,role="",code="",room={},refs=[],busy=false,booted=false,ansRef=null,ansRid="",ans={},myFb="",tickT=null;
+let me=null,role="",code="",room={},refs=[],busy=false,booted=false,ansRef=null,ansRid="",ans={},myFb="",myAns="",tickT=null;
 
 // ---------- Contenido ----------
 function item(g,p,r){const i=p*ROUNDS+r,rn=R(i*7919+g.length*104729);
@@ -546,6 +1143,8 @@ function item(g,p,r){const i=p*ROUNDS+r,rn=R(i*7919+g.length*104729);
   if(t===1)return{h:"¿Cuál es la capital de…?",q:pais.split("|")[0],a:capi};
   return{h:"¿De qué país es capital…?",q:capi.split("|")[0],a:pais}}
  if(g==="colores"){const C=COLS.length,w=Math.floor(rn()*C);let k=Math.floor(rn()*(C-1));if(k>=w)k++;const o=new Set([k,w]);while(o.size<4)o.add(Math.floor(rn()*C));return{h:"Pulsa el color de la TINTA",q:COLS[w][0],ink:COLS[k][1],a:COLS[k][0].toLowerCase(),opts:sh([...o].map(x=>COLS[x][0]),rn)}}
+ if(g==="trivial"){const e=TQ[(i*53)%TQ.length];return{h:"Trivial",q:e[0],a:e[1],opts:sh(e.slice(1,5),rn),lg:1}}
+ if(g==="colmena")return{h:"Escribe lo que crees que dirá la mayoría",q:CM[(i*59)%CM.length],a:"",lg:1};
  if(g==="sinon"){const e=SP[(i*41)%SP.length];return{h:e[0],q:e[1].toUpperCase(),a:e[2].split(",").join("|")}}
  const lg=room.cfg?.lang||"mix",l=lg==="mix"?(i%2?"en":"es"):lg,li=l==="es"?CES:CEN,w=li[(lg==="mix"?i>>1:i)%li.length];return{q:w,a:w,l}}
 
@@ -608,6 +1207,7 @@ function tick(){if(!code||!room.st)return;clocks();if(busy||!me||arb()!==me.uid)
   case"chosen":return run(()=>beginGame(st.g));
   case"intro":if(!st.pz&&t>=st.end)run(()=>startRound(0));return;
   case"round":if(st.pz)return;
+   if(G().k==="all"){listenAns(st);if(t>=st.end||allAns(st))run(()=>scoreAll(st));return}
    if(G().k==="speed"){if(t>=st.end)return run(()=>reveal(null));listenAns(st);const w=winner(st);if(w)run(()=>reveal(w))}
    else if(st.sub==="think"&&t>=st.end)run(()=>upd({sub:"wait",end:null}));
    else if(st.sub==="sing"&&t>=st.end)run(()=>upd({sub:"judge",end:null}));
@@ -615,9 +1215,26 @@ function tick(){if(!code||!room.st)return;clocks();if(busy||!me||arb()!==me.uid)
   case"reveal":if(!st.pz&&t>=st.end)run(()=>st.r+1<ROUNDS?startRound(st.r+1):upd({ph:"gend",end:t+8000,tot:8000}));return;
   case"gend":if(!st.pz&&t>=st.end)run(nextGame);return}}
 function listenAns(st){const rid=st.gi+"_"+st.r;if(rid===ansRid)return;if(ansRef)ansRef.off();ansRid=rid;ans={};ansRef=db.ref(`rooms/${code}/ans/${rid}`);ansRef.on("value",s=>ans=s.val()||{})}
+function allAns(st){const el=ps().filter(p=>onl(p.u)&&canAns(p.u,st));return el.length>0&&el.every(p=>ans[p.u])}
+async function scoreAll(st){const it=item(st.g,st.p,st.r),T=team(),P=room.players||{},E=Object.entries(ans).filter(([u,v])=>v&&P[u]&&canAns(u,st)),up={},sc={},tc={},add=(o,k,n)=>{o[k]=(o[k]||0)+n};let res="";
+ if(st.g==="trivial"){const ok=E.filter(([u,v])=>okA(v.a,it)).sort((a,b)=>(a[1].t||0)-(b[1].t||0));ok.forEach(([u])=>add(sc,u,1));if(ok.length)add(sc,ok[0][0],1);
+  if(T){const tot={},cor={};E.forEach(([u])=>add(tot,P[u].t,1));ok.forEach(([u])=>add(cor,P[u].t,1));for(const t in cor)if(cor[t]*2>=tot[t])add(tc,t,1);if(ok.length)add(tc,P[ok[0][0]].t,1)}
+  res=ok.length?`✓ Aciertan: ${ok.map(([u])=>esc(P[u].n)).join(", ")}<br>⚡ Más rápido: ${esc(P[ok[0][0]].n)} (+1)`:"Nadie ha acertado"}
+ else{const key=v=>norm(String(v).replace(/^(el|la|los|las|un|una|unos|unas)\s+/i,"")),one=T&&who(st.g)==="one",groups=[],lines=[];
+  if(T&&!one){for(let t=0;t<room.cfg.teams;t++)groups.push(E.filter(([u])=>P[u].t===t))}else groups.push(E);
+  groups.forEach(g=>{const c={},lab={};g.forEach(([u,v])=>{const k=key(v.a);if(!k)return;add(c,k,1);lab[k]=lab[k]||v.a});const mx=Math.max(0,...Object.values(c));if(mx<2)return;const top=Object.keys(c).filter(k=>c[k]===mx);
+   g.forEach(([u,v])=>{if(top.includes(key(v.a))){add(sc,u,1);if(one)add(tc,P[u].t,1)}});
+   if(T&&!one)add(tc,P[g[0][0]].t,1);
+   lines.push((T&&!one?"Equipo "+tname(P[g[0][0]].t)+": ":"")+top.map(k=>`«${esc(lab[k])}» (${mx})`).join(", "))});
+  res=lines.length?"Más repetidas: "+lines.join(" · "):"Nadie ha coincidido";
+  const all={};E.forEach(([u,v])=>{const k=key(v.a);if(k){all[k]=all[k]||{l:v.a,n:[]};all[k].n.push(P[u].n)}});
+  res+=`<br><small class="muted">${Object.values(all).map(x=>esc(x.l)+": "+x.n.map(esc).join(", ")).join(" · ")}</small>`}
+ for(const u in sc)up["sc/"+u]=SV.increment(sc[u]);if(T)for(const t in tc)up["sct/"+t]=SV.increment(tc[t]);
+ if(Object.keys(up).length)await db.ref(`rooms/${code}`).update(up);
+ return upd({ph:"reveal",end:now()+7000,tot:7000,pz:false,win:null,res,sub:null})}
 function canAns(u,st){const p=(room.players||{})[u];if(!p)return false;if(!team())return true;if(!(p.t>=0))return false;return who(st.g)!=="one"||(st.resp||{})[p.t]===u}
 function winner(st){const it=item(st.g,st.p,st.r),l=Object.entries(ans).filter(([u,v])=>v&&canAns(u,st)&&okA(v.a,it)).sort((a,b)=>(a[1].t||0)-(b[1].t||0));if(!l.length)return null;const u=l[0][0];return{u,t:room.players[u].t}}
-async function reveal(w){const o={ph:"reveal",end:now()+4500,tot:4500,pz:false,win:null,sub:null};
+async function reveal(w){const o={ph:"reveal",end:now()+4500,tot:4500,pz:false,win:null,sub:null,res:null};
  if(w){const p=(room.players||{})[w.u]||{};o.win={u:w.u||"",n:w.u?p.n||"?":"",t:w.t>=0?w.t:-1};
   if(w.u)await db.ref(`rooms/${code}/sc/${w.u}`).set(SV.increment(1));
   if(team()&&w.t>=0)await db.ref(`rooms/${code}/sct/${w.t}`).set(SV.increment(1))}
@@ -675,10 +1292,10 @@ const A={
  close(){if(confirm("¿Cerrar la sala para todos?"))db.ref("rooms/"+code).remove()},
  out(){const c=code,u=me.uid;leave("Has salido de la sala.");db.ref(`rooms/${c}/players/${u}`).remove();db.ref(`rooms/${c}/on/${u}`).remove()},
  pick(g){upd({ph:"chosen",g})},
- ans(){const st=room.st,i=$("#ans");if(!i)return;const v=i.value.trim();if(!v)return;const it=item(st.g,st.p,st.r);
+ ans(){const st=room.st,i=$("#ans");if(!i)return;const v=i.value.trim();if(!v)return;if(G().k==="all"){const rid=st.gi+"_"+st.r;if(myFb===rid+"s")return;db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:v,t:SV.TIMESTAMP});myFb=rid+"s";myAns=v;return render()}const it=item(st.g,st.p,st.r);
   if(okA(v,it)){const rid=st.gi+"_"+st.r;db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:v,t:SV.TIMESTAMP});myFb=rid;i.value="";render()}
   else{const f=$("#fb");if(f)f.textContent="✗ No es correcta";i.select()}},
- pickAns(v){const st=room.st,rid=st.gi+"_"+st.r;if(myFb===rid||myFb===rid+"x"||!canAns(me.uid,st))return;const it=item(st.g,st.p,st.r);if(okA(v,it)){db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:v,t:SV.TIMESTAMP});myFb=rid}else myFb=rid+"x";render()},
+ pickAns(v){const st=room.st,rid=st.gi+"_"+st.r;if(myFb===rid||myFb===rid+"x"||myFb===rid+"s"||!canAns(me.uid,st))return;if(G().k==="all"){db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:v,t:SV.TIMESTAMP});myFb=rid+"s";myAns=v;return render()}const it=item(st.g,st.p,st.r);if(okA(v,it)){db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:v,t:SV.TIMESTAMP});myFb=rid}else myFb=rid+"x";render()},
  pause(){const st=room.st;if(st.pz)upd({pz:false,end:now()+(st.rem||0)});else if(st.end)upd({pz:true,rem:Math.max(0,st.end-now())})},
  restart(){const st=room.st;if(!st.tot)return;if(st.sub==="judge")return upd({sub:"sing",end:now()+st.tot,pz:false});upd(st.pz?{rem:st.tot}:{end:now()+st.tot})},
  skipR(){if(room.st.ph==="round")reveal(null)},
@@ -739,9 +1356,10 @@ function pickV(st,tv){const left=cfgGames().filter(g=>!(st.done||{})[g]);let nm=
 function introV(st){const g=GAMES[st.g]||{};return `<div class="box center"><div class="muted">Juego ${st.gi} de ${cfgGames().length}</div><h1>${g.n}</h1><p>${g.rules}</p>${team()?`<p class="muted">${who(st.g)==="one"?(g.k==="speed"?"Contesta un portavoz por equipo (va rotando)":"Canta uno por equipo (va rotando)"):(g.k==="speed"?"Puede contestar todo el equipo":"Canta todo el equipo")}</p>`:""}<div class="stage">${CLK}</div></div>`}
 function roundV(st,tv){const g=GAMES[st.g],it=item(st.g,st.p,st.r),hd=`<div class="muted center">${g.n} · Ronda ${st.r+1}/${ROUNDS}${st.pz?" · ⏸ Pausa":""}</div>`;
  if(g.k==="turn")return cantaV(st,tv,it,hd);
- let h=`<div class="box">${hd}${it.h?`<div class="center" style="font-weight:700;font-size:1.15em">${it.h}</div>`:""}<div class="stage"><div class="big"${it.ink?` style="color:${it.ink}"`:""}>${it.img?`<img src="${it.img}" alt="Bandera" style="width:min(280px,70vw);border-radius:8px;display:block;box-shadow:0 4px 18px #0008">`:""}${esc(it.q)}</div>${CLK}</div>`;
+ let h=`<div class="box">${hd}${it.h?`<div class="center" style="font-weight:700;font-size:1.15em">${it.h}</div>`:""}<div class="stage"><div class="big" style="${it.ink?`color:${it.ink};`:""}${it.lg?"font-size:clamp(1.3rem,6vw,2.4rem);letter-spacing:0":""}">${it.img?`<img src="${it.img}" alt="Bandera" style="width:min(280px,70vw);border-radius:8px;display:block;box-shadow:0 4px 18px #0008">`:""}${esc(it.q)}</div>${CLK}</div>`;
  if(!tv){const rid=st.gi+"_"+st.r,mp=room.players[me.uid];
   if(myFb===rid)h+=`<p class="center" style="color:var(--ok)">✓ ¡Correcta! Esperando…</p>`;
+  else if(myFb===rid+"s")h+=`<p class="center" style="color:var(--ok)">✓ Enviado: <b>${esc(myAns)}</b>. Esperando al resto…</p>`;
   else if(myFb===rid+"x")h+=`<p class="center" style="color:var(--bad)">✗ Fallo. Espera a la siguiente ronda</p>`;
   else if(canAns(me.uid,st)&&it.opts)h+=`<div class="row" style="justify-content:center">${it.opts.map(o=>`<button style="flex:1 1 40%;padding:18px;font-size:1.1em" data-a="pickAns" data-v="${o}">${o}</button>`).join("")}</div>`;
   else if(canAns(me.uid,st))h+=`<form data-f="ans" class="row"><input id="ans" type="text" ${st.g==="calculo"?'inputmode="numeric"':""} autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Tu respuesta"><button class="pri">Enviar</button></form><div id="fb" class="muted center"></div>`;
@@ -758,7 +1376,7 @@ function cantaV(st,tv,it,hd){const nm=st.sg?(room.players[st.sg]?.n||"?"):"Equip
  return h+`</div>`+(tv?score(true):"")}
 function revealV(st){const g=GAMES[st.g]||{},it=item(st.g,st.p,st.r),w=st.win;let r="Nadie ha acertado";
  if(w){const x=[];if(w.u)x.push(esc(w.n));if(team()&&w.t>=0)x.push("Equipo "+tname(w.t));r="¡Punto para "+x.join(" · ")+"!"}
- return `<div class="box center"><div class="muted">${g.n} · Ronda ${st.r+1}/${ROUNDS}</div><div>${g.k==="turn"?"Palabra":"Respuesta"}</div><div class="big">${esc(cap(String(it.a).split("|").slice(0,3).join(", ")))}</div><h2>${r}</h2><div class="stage">${CLK}</div></div>`+score(true)}
+ return `<div class="box center"><div class="muted">${g.n} · Ronda ${st.r+1}/${ROUNDS}</div><div>${g.k==="turn"?"Palabra":st.g==="colmena"?"Tema":"Respuesta"}</div><div class="big"${st.g==="colmena"?' style="font-size:clamp(1.3rem,6vw,2.4rem)"':""}>${esc(st.g==="colmena"?it.q:cap(String(it.a).split("|").slice(0,3).join(", ")))}</div>${st.res?`<p style="font-size:1.1em">${st.res}</p>`:`<h2>${r}</h2>`}<div class="stage">${CLK}</div></div>`+score(true)}
 function gendV(st){return `<div class="box center"><h2>Fin de ${GAMES[st.g]?.n||"juego"}</h2><div class="stage">${CLK}</div></div>`+score(false)}
 function endV(st,tv){return `<h1>¡Fin de la sesión!</h1>`+score(false)+(tv?"":isHost()?`<button class="pri" data-a="again">Jugar otra sesión</button><button data-a="close">Cerrar sala</button>`:`<button data-a="out">Salir de la sala</button>`)}
 function score(c){const sc=room.sc||{},T=team(),l=ps().sort((a,b)=>(sc[b.u]||0)-(sc[a.u]||0));let h=`<div class="box"><h2>Marcador</h2>`;
