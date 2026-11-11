@@ -64,6 +64,9 @@ const GAMES={
  huecos:{n:"Palabra con huecos",k:"speed",secs:30,rules:"Escribe la palabra completa. Gana el primero que acierte."},
  anagrama:{n:"Anagrama",k:"speed",secs:40,rules:"Ordena las letras y escribe la palabra. Gana el primero que acierte."},
  calculo:{n:"Cálculo rápido",k:"speed",secs:20,rules:"Resuelve la operación. Gana el primero que acierte."},
+ banderas:{n:"Banderas y capitales",k:"speed",secs:25,rules:"Sale una bandera, un país o una capital. Escribe lo que se pide. Gana el primero que acierte."},
+ colores:{n:"Colores trampa",k:"speed",secs:8,rules:"Pulsa el COLOR DE LA TINTA, no lo que pone. Solo tienes un intento por ronda."},
+ sinon:{n:"Sinónimos y antónimos",k:"speed",secs:30,rules:"Escribe un sinónimo o antónimo de la palabra. Gana el primero que acierte."},
  canta:{n:"Canta la palabra",k:"turn",secs:30,rules:"La palabra se ve 5 segundos. Después hay que cantar una canción que la lleve antes de que acabe el tiempo. El anfitrión decide si vale."}
 };
 const TEAMS=[["Rojo","#ff5d73"],["Azul","#4da3ff"],["Verde","#3fdc8f"],["Amarillo","#ffcf3f"]];
@@ -74,7 +77,454 @@ try{if(NOCFG)throw 0;firebase.initializeApp(FB);auth=firebase.auth();db=firebase
 const now=()=>Date.now()+off,Q=new URLSearchParams(location.search),BASE=location.origin+location.pathname;
 const $=s=>document.querySelector(s),app=$("#app");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const norm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g,"");
+const norm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[\s.\-'’,]+/g,"");
+const okA=(v,it)=>String(it.a).split("|").some(x=>norm(x)===norm(v));
+const PAISES=`AF:Afganistán:Kabul
+AL:Albania:Tirana
+DE:Alemania:Berlín
+AD:Andorra:Andorra la Vieja
+AO:Angola:Luanda
+AG:Antigua y Barbuda:Saint John's|Saint Johns
+SA:Arabia Saudí|Arabia Saudita:Riad|Riyad
+DZ:Argelia:Argel
+AR:Argentina:Buenos Aires
+AM:Armenia:Ereván
+AU:Australia:Canberra
+AT:Austria:Viena
+AZ:Azerbaiyán:Bakú
+BS:Bahamas:Nasáu|Nassau
+BD:Bangladés|Bangladesh:Daca|Dhaka
+BB:Barbados:Bridgetown
+BH:Baréin|Bahréin:Manama
+BE:Bélgica:Bruselas
+BZ:Belice:Belmopán
+BJ:Benín:Porto Novo
+BY:Bielorrusia:Minsk
+MM:Birmania|Myanmar:Naipyidó
+BO:Bolivia:Sucre|La Paz
+BA:Bosnia y Herzegovina|Bosnia:Sarajevo
+BW:Botsuana:Gaborone
+BR:Brasil:Brasilia
+BN:Brunéi:Bandar Seri Begawan
+BG:Bulgaria:Sofía
+BF:Burkina Faso:Uagadugú
+BI:Burundi:Gitega
+BT:Bután:Timbu
+CV:Cabo Verde:Praia
+KH:Camboya:Nom Pen|Phnom Penh
+CM:Camerún:Yaundé
+CA:Canadá:Ottawa
+QA:Catar|Qatar:Doha
+TD:Chad:Yamena
+CZ:Chequia|República Checa:Praga
+CL:Chile:Santiago|Santiago de Chile
+CN:China:Pekín|Beijing
+CY:Chipre:Nicosia
+CO:Colombia:Bogotá
+KM:Comoras:Moroni
+KP:Corea del Norte:Pionyang
+KR:Corea del Sur:Seúl
+CI:Costa de Marfil:Yamusukro
+CR:Costa Rica:San José
+HR:Croacia:Zagreb
+CU:Cuba:La Habana|Habana
+DK:Dinamarca:Copenhague
+DM:Dominica:Roseau
+EC:Ecuador:Quito
+EG:Egipto:El Cairo|Cairo
+SV:El Salvador:San Salvador
+AE:Emiratos Árabes Unidos|Emiratos Árabes|Emiratos:Abu Dabi
+ER:Eritrea:Asmara
+SK:Eslovaquia:Bratislava
+SI:Eslovenia:Liubliana
+ES:España:Madrid
+US:Estados Unidos|EEUU|USA:Washington|Washington DC
+EE:Estonia:Tallin
+SZ:Esuatini|Suazilandia:Mbabane
+ET:Etiopía:Adís Abeba
+PH:Filipinas:Manila
+FI:Finlandia:Helsinki
+FJ:Fiyi:Suva
+FR:Francia:París
+GA:Gabón:Libreville
+GM:Gambia:Banjul
+GE:Georgia:Tiflis
+GH:Ghana:Acra
+GD:Granada:Saint George's|Saint Georges
+GR:Grecia:Atenas
+GT:Guatemala:Ciudad de Guatemala|Guatemala
+GN:Guinea:Conakri
+GQ:Guinea Ecuatorial:Malabo
+GW:Guinea-Bisáu|Guinea Bisau:Bisáu
+GY:Guyana:Georgetown
+HT:Haití:Puerto Príncipe
+HN:Honduras:Tegucigalpa
+HU:Hungría:Budapest
+IN:India:Nueva Delhi|Delhi
+ID:Indonesia:Yakarta
+IQ:Irak:Bagdad
+IR:Irán:Teherán
+IE:Irlanda:Dublín
+IS:Islandia:Reikiavik
+MH:Islas Marshall:Majuro
+SB:Islas Salomón:Honiara
+IT:Italia:Roma
+JM:Jamaica:Kingston
+JP:Japón:Tokio
+JO:Jordania:Amán
+KZ:Kazajistán:Astaná
+KE:Kenia:Nairobi
+KG:Kirguistán:Biskek
+KI:Kiribati:Tarawa
+KW:Kuwait:Kuwait|Ciudad de Kuwait
+LA:Laos:Vientián
+LS:Lesoto:Maseru
+LV:Letonia:Riga
+LB:Líbano:Beirut
+LR:Liberia:Monrovia
+LY:Libia:Trípoli
+LI:Liechtenstein:Vaduz
+LT:Lituania:Vilna
+LU:Luxemburgo:Luxemburgo
+MK:Macedonia del Norte|Macedonia:Skopie
+MG:Madagascar:Antananarivo
+MY:Malasia:Kuala Lumpur
+MW:Malaui:Lilongüe
+MV:Maldivas:Malé
+ML:Malí:Bamako
+MT:Malta:La Valeta|Valeta
+MA:Marruecos:Rabat
+MU:Mauricio:Port Louis
+MR:Mauritania:Nuakchot
+MX:México:Ciudad de México|México DF
+FM:Micronesia:Palikir
+MD:Moldavia:Chisináu
+MC:Mónaco:Mónaco
+MN:Mongolia:Ulán Bator
+ME:Montenegro:Podgorica
+MZ:Mozambique:Maputo
+NA:Namibia:Windhoek
+NR:Nauru:Yaren
+NP:Nepal:Katmandú
+NI:Nicaragua:Managua
+NE:Níger:Niamey
+NG:Nigeria:Abuya
+NO:Noruega:Oslo
+NZ:Nueva Zelanda:Wellington
+OM:Omán:Mascate
+NL:Países Bajos|Holanda:Ámsterdam
+PK:Pakistán:Islamabad
+PW:Palaos:Ngerulmud|Melekeok
+PA:Panamá:Panamá|Ciudad de Panamá
+PG:Papúa Nueva Guinea:Port Moresby
+PY:Paraguay:Asunción
+PE:Perú:Lima
+PL:Polonia:Varsovia
+PT:Portugal:Lisboa
+GB:Reino Unido:Londres
+CF:República Centroafricana:Bangui
+CG:República del Congo|Congo:Brazzaville
+CD:República Democrática del Congo|RD Congo:Kinsasa
+DO:República Dominicana:Santo Domingo
+RW:Ruanda:Kigali
+RO:Rumanía|Rumania:Bucarest
+RU:Rusia:Moscú
+WS:Samoa:Apia
+KN:San Cristóbal y Nieves:Basseterre
+SM:San Marino:San Marino
+VC:San Vicente y las Granadinas:Kingstown
+LC:Santa Lucía:Castries
+ST:Santo Tomé y Príncipe:Santo Tomé
+SN:Senegal:Dakar
+RS:Serbia:Belgrado
+SC:Seychelles:Victoria
+SL:Sierra Leona:Freetown
+SG:Singapur:Singapur
+SY:Siria:Damasco
+SO:Somalia:Mogadiscio
+LK:Sri Lanka:Sri Jayawardenepura Kotte|Colombo
+ZA:Sudáfrica:Pretoria
+SD:Sudán:Jartum
+SS:Sudán del Sur:Yuba
+SE:Suecia:Estocolmo
+CH:Suiza:Berna
+SR:Surinam:Paramaribo
+TH:Tailandia:Bangkok
+TZ:Tanzania:Dodoma
+TJ:Tayikistán:Dusambé
+TL:Timor Oriental:Dili
+TG:Togo:Lomé
+TO:Tonga:Nukualofa
+TT:Trinidad y Tobago:Puerto España
+TN:Túnez:Túnez
+TM:Turkmenistán:Asjabad
+TR:Turquía:Ankara
+TV:Tuvalu:Funafuti
+UA:Ucrania:Kiev|Kyiv
+UG:Uganda:Kampala
+UY:Uruguay:Montevideo
+UZ:Uzbekistán:Taskent
+VU:Vanuatu:Port Vila
+VA:Vaticano|Ciudad del Vaticano:Ciudad del Vaticano|Vaticano
+VE:Venezuela:Caracas
+VN:Vietnam:Hanói
+YE:Yemen:Saná
+DJ:Yibuti:Yibuti
+ZM:Zambia:Lusaka
+ZW:Zimbabue:Harare`.trim().split("\n").map(l=>l.split(":"));
+const SP=[];`rápido:veloz,ligero,raudo,pronto/lento,pausado,despacio
+grande:enorme,amplio,inmenso,gigante,extenso/pequeño,chico,diminuto
+alto:elevado,espigado/bajo
+feliz:contento,alegre,dichoso/triste,infeliz,desdichado
+bonito:hermoso,lindo,bello,precioso,guapo/feo,horrible
+fácil:sencillo,simple/difícil,complicado,complejo
+viejo:anciano,antiguo,mayor/joven,nuevo,moderno
+frío:helado,gélido/caliente,cálido,caluroso
+rico:adinerado,millonario,acaudalado/pobre
+fuerte:robusto,potente,vigoroso/débil,flojo
+limpio:aseado,pulcro/sucio,manchado
+lleno:repleto,completo/vacío
+claro:luminoso,diáfano/oscuro
+ancho:amplio,holgado/estrecho,angosto
+largo:extenso,alargado/corto,breve
+duro:rígido,firme/blando,suave
+seco:árido/mojado,húmedo
+valiente:valeroso,audaz,osado,bravo/cobarde,miedoso
+listo:inteligente,astuto,espabilado/tonto,torpe
+alegre:contento,animado/triste,apenado
+empezar:comenzar,iniciar/terminar,acabar,finalizar
+subir:ascender,trepar/bajar,descender
+entrar:acceder,ingresar/salir
+abrir:destapar/cerrar,tapar
+ganar:vencer,triunfar/perder
+comprar:adquirir/vender
+dar:entregar,regalar/quitar,recibir
+amar:querer,adorar/odiar,detestar
+reír:carcajear/llorar
+encender:prender/apagar
+aparecer:surgir,asomar/desaparecer
+aceptar:admitir,aprobar/rechazar,negar
+recordar:acordarse,rememorar/olvidar
+construir:edificar,levantar/destruir,derribar
+unir:juntar,enlazar/separar,dividir
+aumentar:incrementar,ampliar,crecer/disminuir,reducir
+llegar:arribar/irse,partir,marcharse
+preguntar:interrogar,cuestionar/responder,contestar
+ayudar:auxiliar,socorrer/perjudicar,estorbar
+nacer:brotar/morir,fallecer
+bueno:bondadoso,benévolo/malo,malvado
+cerca:próximo,junto/lejos
+antes:previamente/después,luego
+mucho:bastante,abundante/poco,escaso
+siempre:constantemente/nunca,jamás
+verdad:certeza,realidad/mentira,falsedad
+paz:calma,tranquilidad/guerra,conflicto
+amigo:compañero,colega/enemigo,rival
+principio:inicio,comienzo/final,fin
+alegría:felicidad,gozo,dicha/tristeza,pena
+día:jornada/noche
+luz:claridad,resplandor/oscuridad,sombra
+calor:bochorno/frío
+orden:organización/desorden,caos
+éxito:triunfo,victoria/fracaso,derrota
+riqueza:fortuna,abundancia/pobreza,miseria
+salud:bienestar/enfermedad
+trabajo:empleo,labor,tarea/descanso,ocio
+ruido:sonido,estruendo/silencio
+calma:tranquilidad,serenidad,paz/nervios,agitación
+cansado:agotado,fatigado/descansado
+contento:feliz,alegre,satisfecho/descontento,triste
+tranquilo:sereno,calmado/nervioso,inquieto
+generoso:desprendido,dadivoso/tacaño,egoísta
+simpático:agradable,amable/antipático,desagradable
+educado:cortés,correcto/maleducado,grosero
+tímido:vergonzoso,retraído/extrovertido,atrevido
+honesto:honrado,sincero/deshonesto,mentiroso
+trabajador:laborioso,diligente/vago,perezoso
+ordenado:organizado/desordenado
+gordo:grueso,obeso/delgado,flaco
+nuevo:reciente,moderno,flamante/viejo,usado,antiguo
+caro:costoso/barato,económico
+temprano:pronto/tarde
+lento:pausado,despacio/rápido,veloz
+pesado:macizo/ligero,liviano
+caliente:cálido,ardiente/frío
+dulce:azucarado/salado,amargo
+suave:liso,terso/áspero,rugoso
+oscuro:sombrío,tenebroso/claro,luminoso
+correcto:acertado,exacto/incorrecto,erróneo
+posible:factible,viable/imposible
+útil:práctico,provechoso/inútil
+seguro:protegido,cierto/inseguro,peligroso
+normal:común,habitual,corriente/raro,extraño,anormal
+interior:interno/exterior,externo
+superior:mayor/inferior
+positivo:favorable/negativo
+activo:dinámico,enérgico/pasivo,inactivo
+alegrar:animar/entristecer
+mejorar:progresar,perfeccionar/empeorar
+acercar:aproximar,arrimar/alejar
+atacar:asaltar,agredir/defender
+permitir:dejar,autorizar/prohibir,impedir
+mostrar:enseñar,exhibir/ocultar,esconder
+encontrar:hallar,descubrir/perder
+llenar:colmar,rellenar/vaciar
+sumar:añadir,agregar/restar
+mojar:empapar,humedecer/secar
+dormir:descansar,reposar/despertar
+hablar:conversar,charlar,decir/callar
+saber:conocer/ignorar
+poner:colocar,situar/quitar
+levantar:alzar,elevar/bajar,tumbar
+tirar:lanzar,arrojar/coger,recoger
+cuidar:atender,proteger/descuidar
+olvidar:omitir/recordar
+salvar:rescatar,librar/condenar
+crear:inventar,producir/destruir
+sacar:extraer/meter
+romper:quebrar,partir/arreglar,reparar
+continuar:seguir,proseguir/parar,detener
+avanzar:adelantar,progresar/retroceder
+mandar:ordenar,enviar/obedecer
+cobrar:recaudar/pagar
+gastar:consumir/ahorrar
+sufrir:padecer/disfrutar,gozar
+odiar:detestar,aborrecer/amar,querer
+nervioso:inquieto,alterado/tranquilo,calmado
+hermoso:bello,precioso/feo
+enorme:gigante,inmenso/diminuto,minúsculo
+famoso:conocido,célebre/desconocido,anónimo
+sabio:culto,erudito/ignorante,inculto
+cómodo:confortable/incómodo
+vivo:viviente/muerto
+igual:idéntico,semejante/diferente,distinto
+entero:completo,íntegro/roto,incompleto
+abierto:destapado/cerrado
+despierto:desvelado/dormido
+recto:derecho/curvo,torcido
+grueso:gordo,ancho/fino,delgado
+fino:delgado/grueso
+agudo:afilado,puntiagudo/romo,grave
+profundo:hondo/superficial
+oculto:escondido,secreto/visible
+real:verdadero/ficticio,imaginario,irreal
+cierto:verdadero/falso
+falso:fingido/verdadero,auténtico
+primero:inicial/último
+último:final/primero
+ganador:vencedor/perdedor
+victoria:triunfo/derrota
+guerra:conflicto,lucha/paz
+amor:cariño,afecto/odio
+valor:valentía,coraje/cobardía,miedo
+miedo:temor,pánico/valor,valentía
+risa:carcajada/llanto
+llanto:lloro/risa
+entrada:acceso/salida
+subida:ascenso/bajada,descenso
+ida:marcha/vuelta,regreso
+pregunta:cuestión/respuesta
+comienzo:inicio,principio/final,fin
+ventaja:beneficio/desventaja,inconveniente
+error:fallo,equivocación/acierto
+bondad:benevolencia/maldad
+belleza:hermosura/fealdad
+juventud:mocedad/vejez
+inocente:ingenuo/culpable
+lejano:distante,remoto/cercano,próximo
+cercano:próximo/lejano
+frecuente:habitual/raro
+raro:extraño,curioso/normal,común
+amable:cordial,atento/antipático,grosero
+cruel:despiadado,malvado/bondadoso,compasivo
+débil:flojo/fuerte
+optimista:positivo/pesimista
+agradable:placentero/desagradable
+sano:saludable/enfermo
+tonto:bobo,necio/listo,inteligente
+pobre:necesitado/rico
+barato:económico/caro
+sencillo:simple,fácil/complicado
+cobarde:miedoso/valiente
+escaso:poco,insuficiente/abundante
+abundante:copioso/escaso
+ruidoso:estruendoso/silencioso
+silencioso:callado/ruidoso
+comenzar:empezar,iniciar/terminar,acabar
+terminar:acabar,finalizar/empezar,comenzar
+aprender:estudiar/olvidar,enseñar
+querer:amar,desear/odiar
+deprisa:rápido/despacio
+arriba:encima/abajo,debajo
+dentro:adentro/fuera,afuera
+delante:enfrente/detrás
+bajar:descender/subir
+salir:marcharse/entrar
+morir:fallecer,perecer/nacer,vivir
+vivir:existir/morir
+cerrar:clausurar/abrir
+apagar:extinguir/encender
+perder:extraviar/ganar,encontrar
+destruir:derribar,arrasar/construir
+alejar:apartar/acercar
+calentar:caldear/enfriar
+enfriar:refrescar/calentar
+limpiar:asear/ensuciar
+ensuciar:manchar/limpiar
+alargar:prolongar,estirar/acortar
+acortar:abreviar,reducir/alargar
+divertido:entretenido,gracioso/aburrido
+aburrido:tedioso,pesado/divertido
+interesante:atractivo/aburrido
+diminuto:minúsculo/enorme
+pequeño:chico,diminuto/grande
+estrecho:angosto/ancho
+corto:breve/largo
+sucio:manchado,mugriento/limpio
+vacío:desocupado/lleno
+triste:apenado,afligido/alegre,feliz
+feo:horrible/bonito,guapo,hermoso
+malo:malvado,perverso/bueno
+difícil:complicado,complejo/fácil,sencillo
+joven:juvenil/viejo,anciano
+húmedo:mojado/seco
+oscuridad:tinieblas/luz,claridad
+tristeza:pena,melancolía/alegría,felicidad
+derrota:fracaso/victoria,triunfo
+pobreza:miseria/riqueza
+enfermedad:dolencia/salud
+mentira:engaño,falsedad/verdad
+enemigo:rival,adversario/amigo
+final:fin,término/principio,comienzo
+odio:rencor/amor
+desorden:caos,lío/orden
+fracaso:derrota/éxito,triunfo
+peligro:riesgo/seguridad
+orgullo:soberbia/humildad
+humilde:modesto,sencillo/orgulloso,soberbio
+paciente:tranquilo/impaciente
+impaciente:ansioso/paciente
+obediente:dócil/desobediente
+bajo:chaparro/alto
+sincero:franco,honesto/falso,hipócrita
+alegremente:felizmente/tristemente
+ligero:liviano,leve/pesado
+áspero:rugoso,basto/suave,liso
+amargo:agrio/dulce
+cortés:educado,atento/descortés,grosero
+fiel:leal/infiel,traidor
+leal:fiel/desleal,traidor
+astuto:listo,pícaro/ingenuo
+ingenuo:inocente,cándido/astuto,malicioso
+puntual:exacto/impuntual
+legal:lícito,legítimo/ilegal
+visible:perceptible/invisible
+mojado:empapado,húmedo/seco
+cerrado:clausurado/abierto
+anterior:previo/posterior
+máximo:mayor,supremo/mínimo
+prudente:cauto,sensato/imprudente`.trim().split("\n").forEach(l=>{const[w,r]=l.split(":"),[s,a]=r.split("/");if(s)SP.push(["Sinónimo de",w,s]);if(a)SP.push(["Antónimo de",w,a])});
+const COLS=[["ROJO","#ff3b3b"],["AZUL","#3b82ff"],["VERDE","#22c55e"],["AMARILLO","#facc15"],["MORADO","#a855f7"],["NARANJA","#fb923c"],["ROSA","#f472b6"],["BLANCO","#ffffff"]];
 const cap=w=>String(w).charAt(0).toUpperCase()+String(w).slice(1);
 const R=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
 const sh=(a,rn)=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rn()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -91,6 +541,12 @@ function item(g,p,r){const i=p*ROUNDS+r,rn=R(i*7919+g.length*104729);
   else if(y===3){const x=2+n(9),z=2+n(11);q=`${x*z} ÷ ${x}`;a=z}
   else{const x=5+n(40),z=5+n(40),w=2+n(9);q=`${x} + ${z} − ${w}`;a=x+z-w}
   return{q,a:String(a)}}
+ if(g==="banderas"){const N=PAISES.length,[iso,pais,capi]=PAISES[(i*37)%N],t=(i+Math.floor(i/N))%3;
+  if(t===0)return{h:"¿De qué país es esta bandera?",img:"https://flagcdn.com/w320/"+iso.toLowerCase()+".png",q:"",a:pais};
+  if(t===1)return{h:"¿Cuál es la capital de…?",q:pais.split("|")[0],a:capi};
+  return{h:"¿De qué país es capital…?",q:capi.split("|")[0],a:pais}}
+ if(g==="colores"){const C=COLS.length,w=Math.floor(rn()*C);let k=Math.floor(rn()*(C-1));if(k>=w)k++;const o=new Set([k,w]);while(o.size<4)o.add(Math.floor(rn()*C));return{h:"Pulsa el color de la TINTA",q:COLS[w][0],ink:COLS[k][1],a:COLS[k][0].toLowerCase(),opts:sh([...o].map(x=>COLS[x][0]),rn)}}
+ if(g==="sinon"){const e=SP[(i*41)%SP.length];return{h:e[0],q:e[1].toUpperCase(),a:e[2].split(",").join("|")}}
  const lg=room.cfg?.lang||"mix",l=lg==="mix"?(i%2?"en":"es"):lg,li=l==="es"?CES:CEN,w=li[(lg==="mix"?i>>1:i)%li.length];return{q:w,a:w,l}}
 
 // ---------- Ayudas ----------
@@ -160,7 +616,7 @@ function tick(){if(!code||!room.st)return;clocks();if(busy||!me||arb()!==me.uid)
   case"gend":if(!st.pz&&t>=st.end)run(nextGame);return}}
 function listenAns(st){const rid=st.gi+"_"+st.r;if(rid===ansRid)return;if(ansRef)ansRef.off();ansRid=rid;ans={};ansRef=db.ref(`rooms/${code}/ans/${rid}`);ansRef.on("value",s=>ans=s.val()||{})}
 function canAns(u,st){const p=(room.players||{})[u];if(!p)return false;if(!team())return true;if(!(p.t>=0))return false;return who(st.g)!=="one"||(st.resp||{})[p.t]===u}
-function winner(st){const it=item(st.g,st.p,st.r),l=Object.entries(ans).filter(([u,v])=>v&&canAns(u,st)&&norm(v.a)===norm(it.a)).sort((a,b)=>(a[1].t||0)-(b[1].t||0));if(!l.length)return null;const u=l[0][0];return{u,t:room.players[u].t}}
+function winner(st){const it=item(st.g,st.p,st.r),l=Object.entries(ans).filter(([u,v])=>v&&canAns(u,st)&&okA(v.a,it)).sort((a,b)=>(a[1].t||0)-(b[1].t||0));if(!l.length)return null;const u=l[0][0];return{u,t:room.players[u].t}}
 async function reveal(w){const o={ph:"reveal",end:now()+4500,tot:4500,pz:false,win:null,sub:null};
  if(w){const p=(room.players||{})[w.u]||{};o.win={u:w.u||"",n:w.u?p.n||"?":"",t:w.t>=0?w.t:-1};
   if(w.u)await db.ref(`rooms/${code}/sc/${w.u}`).set(SV.increment(1));
@@ -220,8 +676,9 @@ const A={
  out(){const c=code,u=me.uid;leave("Has salido de la sala.");db.ref(`rooms/${c}/players/${u}`).remove();db.ref(`rooms/${c}/on/${u}`).remove()},
  pick(g){upd({ph:"chosen",g})},
  ans(){const st=room.st,i=$("#ans");if(!i)return;const v=i.value.trim();if(!v)return;const it=item(st.g,st.p,st.r);
-  if(norm(v)===norm(it.a)){const rid=st.gi+"_"+st.r;db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:v,t:SV.TIMESTAMP});myFb=rid;i.value="";render()}
+  if(okA(v,it)){const rid=st.gi+"_"+st.r;db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:v,t:SV.TIMESTAMP});myFb=rid;i.value="";render()}
   else{const f=$("#fb");if(f)f.textContent="✗ No es correcta";i.select()}},
+ pickAns(v){const st=room.st,rid=st.gi+"_"+st.r;if(myFb===rid||myFb===rid+"x"||!canAns(me.uid,st))return;const it=item(st.g,st.p,st.r);if(okA(v,it)){db.ref(`rooms/${code}/ans/${rid}/${me.uid}`).set({a:v,t:SV.TIMESTAMP});myFb=rid}else myFb=rid+"x";render()},
  pause(){const st=room.st;if(st.pz)upd({pz:false,end:now()+(st.rem||0)});else if(st.end)upd({pz:true,rem:Math.max(0,st.end-now())})},
  restart(){const st=room.st;if(!st.tot)return;if(st.sub==="judge")return upd({sub:"sing",end:now()+st.tot,pz:false});upd(st.pz?{rem:st.tot}:{end:now()+st.tot})},
  skipR(){if(room.st.ph==="round")reveal(null)},
@@ -282,9 +739,11 @@ function pickV(st,tv){const left=cfgGames().filter(g=>!(st.done||{})[g]);let nm=
 function introV(st){const g=GAMES[st.g]||{};return `<div class="box center"><div class="muted">Juego ${st.gi} de ${cfgGames().length}</div><h1>${g.n}</h1><p>${g.rules}</p>${team()?`<p class="muted">${who(st.g)==="one"?(g.k==="speed"?"Contesta un portavoz por equipo (va rotando)":"Canta uno por equipo (va rotando)"):(g.k==="speed"?"Puede contestar todo el equipo":"Canta todo el equipo")}</p>`:""}<div class="stage">${CLK}</div></div>`}
 function roundV(st,tv){const g=GAMES[st.g],it=item(st.g,st.p,st.r),hd=`<div class="muted center">${g.n} · Ronda ${st.r+1}/${ROUNDS}${st.pz?" · ⏸ Pausa":""}</div>`;
  if(g.k==="turn")return cantaV(st,tv,it,hd);
- let h=`<div class="box">${hd}<div class="stage"><div class="big">${esc(it.q)}</div>${CLK}</div>`;
+ let h=`<div class="box">${hd}${it.h?`<div class="center" style="font-weight:700;font-size:1.15em">${it.h}</div>`:""}<div class="stage"><div class="big"${it.ink?` style="color:${it.ink}"`:""}>${it.img?`<img src="${it.img}" alt="Bandera" style="width:min(280px,70vw);border-radius:8px;display:block;box-shadow:0 4px 18px #0008">`:""}${esc(it.q)}</div>${CLK}</div>`;
  if(!tv){const rid=st.gi+"_"+st.r,mp=room.players[me.uid];
   if(myFb===rid)h+=`<p class="center" style="color:var(--ok)">✓ ¡Correcta! Esperando…</p>`;
+  else if(myFb===rid+"x")h+=`<p class="center" style="color:var(--bad)">✗ Fallo. Espera a la siguiente ronda</p>`;
+  else if(canAns(me.uid,st)&&it.opts)h+=`<div class="row" style="justify-content:center">${it.opts.map(o=>`<button style="flex:1 1 40%;padding:18px;font-size:1.1em" data-a="pickAns" data-v="${o}">${o}</button>`).join("")}</div>`;
   else if(canAns(me.uid,st))h+=`<form data-f="ans" class="row"><input id="ans" type="text" ${st.g==="calculo"?'inputmode="numeric"':""} autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Tu respuesta"><button class="pri">Enviar</button></form><div id="fb" class="muted center"></div>`;
   else{const r=(st.resp||{})[mp?.t];h+=`<p class="muted center">${r?`Contesta <b>${esc(room.players[r]?.n||"?")}</b> por tu equipo`:"Mira la pantalla"}</p>`}}
  return h+`</div>`+(tv?score(true):"")}
@@ -299,7 +758,7 @@ function cantaV(st,tv,it,hd){const nm=st.sg?(room.players[st.sg]?.n||"?"):"Equip
  return h+`</div>`+(tv?score(true):"")}
 function revealV(st){const g=GAMES[st.g]||{},it=item(st.g,st.p,st.r),w=st.win;let r="Nadie ha acertado";
  if(w){const x=[];if(w.u)x.push(esc(w.n));if(team()&&w.t>=0)x.push("Equipo "+tname(w.t));r="¡Punto para "+x.join(" · ")+"!"}
- return `<div class="box center"><div class="muted">${g.n} · Ronda ${st.r+1}/${ROUNDS}</div><div>${g.k==="turn"?"Palabra":"Respuesta"}</div><div class="big">${esc(cap(it.a))}</div><h2>${r}</h2><div class="stage">${CLK}</div></div>`+score(true)}
+ return `<div class="box center"><div class="muted">${g.n} · Ronda ${st.r+1}/${ROUNDS}</div><div>${g.k==="turn"?"Palabra":"Respuesta"}</div><div class="big">${esc(cap(String(it.a).split("|").slice(0,3).join(", ")))}</div><h2>${r}</h2><div class="stage">${CLK}</div></div>`+score(true)}
 function gendV(st){return `<div class="box center"><h2>Fin de ${GAMES[st.g]?.n||"juego"}</h2><div class="stage">${CLK}</div></div>`+score(false)}
 function endV(st,tv){return `<h1>¡Fin de la sesión!</h1>`+score(false)+(tv?"":isHost()?`<button class="pri" data-a="again">Jugar otra sesión</button><button data-a="close">Cerrar sala</button>`:`<button data-a="out">Salir de la sala</button>`)}
 function score(c){const sc=room.sc||{},T=team(),l=ps().sort((a,b)=>(sc[b.u]||0)-(sc[a.u]||0));let h=`<div class="box"><h2>Marcador</h2>`;
