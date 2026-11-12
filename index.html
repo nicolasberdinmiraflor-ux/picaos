@@ -1872,7 +1872,9 @@ const onl=u=>!!(room.on||{})[u];
 const isHost=()=>me&&room.host===me.uid;
 const team=()=>room.cfg?.mode==="eq";
 const G=()=>GAMES[room.st?.g]||{};
-const NR=()=>room.cfg?.rondas||RDEF;
+const NR=()=>room.st?.nr||room.cfg?.rondas||RDEF;
+const TURNK=["turn","tabu","qs","pic"];
+function turnUnits(){if(team()){let n=0;for(let k=0;k<room.cfg.teams;k++)if(members(k).length)n++;return Math.max(1,n)}return Math.max(1,ps().filter(p=>onl(p.u)).length||ps().length)}
 const secs=g=>(room.cfg?.secs||{})[g]||GAMES[g].secs;
 const who=g=>(room.cfg?.who||{})[g]||"all";
 const tname=t=>TEAMS[t]?TEAMS[t][0]:"";
@@ -1884,7 +1886,7 @@ function arb(){const on=room.on||{};if(room.tv&&on[room.tv])return room.tv;if(on
 function ctrlU(){if(onl(room.host))return room.host;return ps().find(p=>onl(p.u))?.u}
 const amCtrl=()=>me&&ctrlU()===me.uid;
 function members(t){const all=ps().filter(p=>p.t===t),o=all.filter(p=>onl(p.u));return o.length?o:all}
-function defCfg(){const s={},w={},g={};for(const k in GAMES){s[k]=GAMES[k].secs;w[k]="all";g[k]=true}return{rondas:RDEF,mode:"ind",teams:2,form:"elegir",order:"rand",games:g,secs:s,who:w,lang:"mix",dif:"m",fam:0}}
+function defCfg(){const s={},w={},g={};for(const k in GAMES){s[k]=GAMES[k].secs;w[k]="all";g[k]=true}return{rondas:RDEF,mode:"ind",teams:2,form:"elegir",order:"rand",games:g,secs:s,who:w,lang:"mix",dif:"m",fam:0,vueltas:1}}
 function qr(t,s){const el=$("#qr");if(!el||typeof QRCode==="undefined")return;el.innerHTML="";new QRCode(el,{text:t,width:s,height:s})}
 function msg(h){app.innerHTML=`<h1>PICAOS ⚡</h1><div class="box">${h}</div>`}
 function wake(){const w=()=>{try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}};w();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")w()})}
@@ -1979,7 +1981,7 @@ function gendData(st){const sn=st.snap||{},sc=room.sc||{},P=room.players||{};let
  else for(const u in P){const d=(sc[u]||0)-(sn[u]||0);if(d>bv){bv=d;best=(P[u].e||"")+" "+P[u].n}}return best?`${best} (${fmt(bv)})`:"Nadie"}
 function toGend(){const st=room.st;return upd({ph:"gend",end:now()+12000,tot:12000,pz:false,["hist/"+st.g]:gendData(st)})}
 async function beginGame(g){if(!GAMES[g])return nextGame();await db.ref(`rooms/${code}/ans`).remove();
- return upd({snap:room.sc||{},snapt:room.sct||{},ph:"intro",g,p:partida(g),gi:(room.st.gi||0)+1,r:0,end:now()+30000,tot:30000,pz:false,win:null,sub:null,["done/"+g]:true})}
+ return upd({nr:TURNK.includes(GAMES[g].k)?turnUnits()*(room.cfg.vueltas||1):null,snap:room.sc||{},snapt:room.sct||{},ph:"intro",g,p:partida(g),gi:(room.st.gi||0)+1,r:0,end:now()+30000,tot:30000,pz:false,win:null,sub:null,["done/"+g]:true})}
 function startRound(r){const st=room.st,g=st.g,t=now(),o={ph:"round",r,pz:false,win:null,resp:null};
  if(team()){o.resp={};for(let k=0;k<room.cfg.teams;k++){const m=members(k);if(m.length)o.resp[k]=m[(st.gi*3+r)%m.length].u}}
  const K=GAMES[g].k,TT=secs(g)*1000*(["trivial","banderas","calculo"].includes(g)?{f:1.5,m:1,d:.6}[DIF()]:1);o.imp=null;o.res=null;o.vr=null;
@@ -2198,7 +2200,7 @@ function lobbyV(st,tv){const c=room.cfg,H=isHost()&&!tv,T=team();
 function cfgV(c){const seg=(k,o)=>`<div class="row">${o.map(([v,l])=>`<button data-a="cfg" data-k="${k}" data-v="${v}" class="${c[k]===v?"on":""}">${l}</button>`).join("")}</div>`,T=c.mode==="eq",gs=c.games||{};
  let h=`<div class="box"><h2>Configuración</h2><label>Modo</label>${seg("mode",[["ind","Individual"],["eq","Por equipos"]])}`;
  if(T)h+=`<label>Número de equipos</label>${seg("teams",[[2,"2"],[3,"3"],[4,"4"]])}<label>Formación</label>${seg("form",[["elegir","Cada uno elige"],["azar","Al azar"]])}<button data-a="rand">Repartir equipos al azar ahora</button>`;
- h+=`<label>Rondas por juego</label>${seg("rondas",[[3,"3"],[5,"5"],[10,"10"]])}<label>Orden de los juegos</label>${seg("order",[["rand","Aleatorio"],["pick",T?"Lo eligen los equipos por turnos":"Lo eligen los jugadores por turnos"]])}`;
+ h+=`<label>Rondas por juego</label>${seg("rondas",[[3,"3"],[5,"5"],[10,"10"]])}<label>Juegos por turnos (Tabú, Pictionary, ¿Qué soy?, Canta): vueltas</label><div class="muted" style="font-size:.9em">1 vuelta = un turno para cada ${c.mode==="eq"?"equipo":"jugador"}</div>${seg("vueltas",[[1,"1 (mínimo)"],[2,"2"],[3,"3"]])}<label>Orden de los juegos</label>${seg("order",[["rand","Aleatorio"],["pick",T?"Lo eligen los equipos por turnos":"Lo eligen los jugadores por turnos"]])}`;
  h+=`<div class="row" style="justify-content:space-between"><label>Juegos y segundos${T?" · quién contesta":""}</label><button data-a="allG">Todos</button></div><ul class="list">`;
  for(const g in GAMES)h+=`<li><input type="checkbox" data-c="game" data-v="${g}" ${gs[g]?"checked":""} aria-label="${GAMES[g].n}"><span class="n">${GAMES[g].n}</span><input type="number" data-c="secs" data-v="${g}" value="${secs(g)}" min="5" max="300" step="5" aria-label="Segundos">${T?`<select data-c="who" data-v="${g}"><option value="all" ${who(g)==="all"?"selected":""}>Todo el equipo</option><option value="one" ${who(g)==="one"?"selected":""}>Solo uno</option></select>`:""}</li>`;
  const L=c.lang||"mix";
@@ -2216,7 +2218,7 @@ function spinV(st){const left=cfgGames().filter(g=>!(st.done||{})[g]),L=left.len
  return `<div class="box center"><h2>🎰 ¿Qué juego toca?</h2><div class="reel"><div style="--to:-${(seq.length-1)*64}px">${seq.map(g=>`<div>${GAMES[g].n}</div>`).join("")}</div></div><p class="muted">Quedan ${left.length} juegos</p></div>`+score(true)}
 function introV(st,tv){const g=GAMES[st.g]||{},T=team(),sg=Math.round(secs(st.g)*(["trivial","banderas","calculo"].includes(st.g)?{f:1.5,m:1,d:.6}[DIF()]:1));if(st.g==="cadena")loadDic();
  const wh=T&&["speed","all","turn"].includes(g.k)?(who(st.g)==="one"?(g.k==="turn"?"Canta uno por equipo (va rotando)":"Contesta un portavoz por equipo (va rotando)"):(g.k==="turn"?"Canta todo el equipo":"Puede contestar todo el equipo")):"";
- return `<div class="box center"><div class="muted">Siguiente juego · ${st.gi} de ${cfgGames().length}</div><h1>${g.n}</h1><div class="box" style="text-align:left;background:var(--bg)"><h2>📋 Cómo se juega</h2><ul style="margin:0;padding-left:1.2em;font-size:1.05em;display:flex;flex-direction:column;gap:6px">${String(g.rules).split("|").map(x=>`<li>${x}</li>`).join("")}</ul>${wh?`<p class="muted" style="margin:0">👥 ${wh}</p>`:""}<p class="muted" style="margin:0">⏱ ${g.k==="imp"?"Pistas sin límite y 30 s para votar":sg+" s por ronda"} · ${NR()} rondas</p></div><p class="muted">Empieza en…</p><div class="stage">${CLK}</div>${!tv&&amCtrl()?`<button class="pri" style="padding:16px" data-a="goNow">▶ Empezar ya</button>`:`<p class="muted">El anfitrión puede empezar antes</p>`}</div>`}
+ return `<div class="box center"><div class="muted">Siguiente juego · ${st.gi} de ${cfgGames().length}</div><h1>${g.n}</h1><div class="box" style="text-align:left;background:var(--bg)"><h2>📋 Cómo se juega</h2><ul style="margin:0;padding-left:1.2em;font-size:1.05em;display:flex;flex-direction:column;gap:6px">${String(g.rules).split("|").map(x=>`<li>${x}</li>`).join("")}</ul>${wh?`<p class="muted" style="margin:0">👥 ${wh}</p>`:""}<p class="muted" style="margin:0">⏱ ${g.k==="imp"?"Pistas sin límite y 30 s para votar":sg+" s por ronda"} · ${NR()} rondas${TURNK.includes(g.k)?` (${room.cfg.vueltas||1} turno${(room.cfg.vueltas||1)>1?"s":""} para cada ${T?"equipo":"jugador"})`:""}</p></div><p class="muted">Empieza en…</p><div class="stage">${CLK}</div>${!tv&&amCtrl()?`<button class="pri" style="padding:16px" data-a="goNow">▶ Empezar ya</button>`:`<p class="muted">El anfitrión puede empezar antes</p>`}</div>`}
 function roundV(st,tv){const g=GAMES[st.g],it=item(st.g,st.p,st.r),hd=`<div class="muted center">${g.n} · Ronda ${st.r+1}/${NR()}${st.pz?" · ⏸ Pausa":""}</div>`;
  if(g.k==="turn")return cantaV(st,tv,it,hd);
  if(g.k==="imp")return impV(st,tv,it,hd);
