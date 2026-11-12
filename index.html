@@ -149,7 +149,7 @@ const GAMES={
  impostor:{n:"El impostor",k:"imp",secs:90,rules:"Todos ven la misma palabra menos el impostor. Por turnos, cada uno dice una pista. Después se vota quién es. Individual: si lo pilláis, +1 para el grupo; si no, +2 para el impostor. Por equipos: cada voto acertado da +1 a tu equipo y cada voto fallado da +1 al equipo del impostor."},
  tabu:{n:"Tabú",k:"tabu",secs:45,rules:"Uno describe la palabra sin decir las prohibidas y los demás la adivinan en voz alta. En equipos, el equipo rival vigila las palabras prohibidas."},
  quesoy:{n:"¿Qué soy?",k:"qs",secs:30,rules:"Uno se pone el móvil en la frente y los demás le dan pistas para que adivine la palabra antes de que acabe el tiempo."},
- cadena:{n:"Cadena de palabras",k:"chain",secs:12,rules:"Cada palabra tiene que empezar por la última sílaba de la anterior y no se puede repetir. Si se te acaba el tiempo, el que dijo la última palabra válida gana el punto."},
+ cadena:{n:"Cadena de palabras",k:"chain",secs:12,rules:"La PRIMERA sílaba de tu palabra tiene que ser la ÚLTIMA sílaba de la anterior (ca·SA → SA·po vale, SAL·to no). Solo valen palabras del diccionario (con plurales y verbos conjugados) y no se pueden repetir. Si se te acaba el tiempo, el que dijo la última palabra válida gana el punto."},
  pictionary:{n:"Pictionary",k:"pic",secs:80,rules:"Uno dibuja la palabra en su móvil y los demás escriben qué es. Acertar da +1 al que adivina y +1 al que dibuja. En equipos, adivina su equipo y en el último tercio los rivales pueden robar."},
  canta:{n:"Canta la palabra",k:"turn",secs:30,rules:"La palabra se ve 5 segundos. Después hay que cantar una canción que la lleve antes de que acabe el tiempo. El anfitrión decide si vale."}
 };
@@ -1979,7 +1979,7 @@ function gendData(st){const sn=st.snap||{},sc=room.sc||{},P=room.players||{};let
  else for(const u in P){const d=(sc[u]||0)-(sn[u]||0);if(d>bv){bv=d;best=(P[u].e||"")+" "+P[u].n}}return best?`${best} (${fmt(bv)})`:"Nadie"}
 function toGend(){const st=room.st;return upd({ph:"gend",end:now()+12000,tot:12000,pz:false,["hist/"+st.g]:gendData(st)})}
 async function beginGame(g){if(!GAMES[g])return nextGame();await db.ref(`rooms/${code}/ans`).remove();
- return upd({snap:room.sc||{},snapt:room.sct||{},ph:"intro",g,p:partida(g),gi:(room.st.gi||0)+1,r:0,end:now()+6000,tot:6000,pz:false,win:null,sub:null,["done/"+g]:true})}
+ return upd({snap:room.sc||{},snapt:room.sct||{},ph:"intro",g,p:partida(g),gi:(room.st.gi||0)+1,r:0,end:now()+30000,tot:30000,pz:false,win:null,sub:null,["done/"+g]:true})}
 function startRound(r){const st=room.st,g=st.g,t=now(),o={ph:"round",r,pz:false,win:null,resp:null};
  if(team()){o.resp={};for(let k=0;k<room.cfg.teams;k++){const m=members(k);if(m.length)o.resp[k]=m[(st.gi*3+r)%m.length].u}}
  const K=GAMES[g].k,TT=secs(g)*1000*(["trivial","banderas","calculo"].includes(g)?{f:1.5,m:1,d:.6}[DIF()]:1);o.imp=null;o.res=null;o.vr=null;
@@ -1989,7 +1989,24 @@ function startRound(r){const st=room.st,g=st.g,t=now(),o={ph:"round",r,pz:false,
  else if(K==="imp"){const l=sh(ps().filter(p=>onl(p.u)),Math.random),n=l.length>12?3:l.length>6?2:1,imp={};l.slice(0,n).forEach(p=>imp[p.u]=true);Object.assign(o,{imp,ord:sh(l.map(p=>p.u),Math.random),oi:0,sub:"talk",end:null,tot:null})}
  else{const tk=(st.tk??-1)+1;Object.assign(o,turnP(tk),{tk,sub:"play",end:t+TT,tot:TT})}
  return upd(o)}
-function lastSyl(w){const s=norm(w).replace(/[^a-z]/g,""),V=k=>"aeiou".includes(s[k])||(s[k]==="y"&&k===s.length-1);let i=s.length-1;while(i>=0&&!V(i))i--;if(i<0)return s;while(i>0&&V(i-1))i--;let j=i-1;if(j<0)return s;if(j>=1&&!V(j-1)&&["pr","br","tr","dr","cr","gr","fr","pl","bl","cl","gl","fl","ch","ll","rr"].includes(s.slice(j-1,j+1)))j--;let r=s.slice(j);if(r.startsWith("rr"))r=r.slice(1);return r}
+function SYL(w){const s=String(w).toLowerCase().replace(/[^a-záéíóúüñ]/g,""),VV="aeiouáéíóúü",U=[];let i=0;
+ while(i<s.length){const c=s[i],n=s[i+1]||"",n2=s[i+2]||"";
+  if((c==="c"&&n==="h")||(c==="l"&&n==="l")||(c==="r"&&n==="r")){U.push(["C",c+n]);i+=2;continue}
+  if((c==="q"||c==="g")&&n==="u"&&"eiéí".includes(n2)&&n2){U.push(["C",c+n]);i+=2;continue}
+  if(VV.includes(c)||(c==="y"&&i>0&&!(n&&VV.includes(n)))){U.push(["V",c]);i++;continue}
+  U.push(["C",c]);i++}
+ const strong=v=>"aeoáéíóú".includes(v),seg=[];
+ for(const[t,x]of U){const L=seg[seg.length-1];if(L&&L.t===t&&t==="C")L.x.push(x);else if(L&&L.t==="V"&&t==="V"&&!(strong(L.x[L.x.length-1])&&strong(x)))L.x.push(x);else seg.push({t,x:[x]})}
+ const CL=new Set(["pr","br","tr","dr","cr","gr","fr","pl","bl","cl","gl","fl","kr","kl"]),out=[];let on="";
+ for(let k=0;k<seg.length;k++){const g=seg[k];if(g.t==="C"){if(!out.length&&k===0){on=g.x.join("");continue}continue}
+  let syl=on+g.x.join("");on="";const nx=seg[k+1],nv=seg[k+2];
+  if(nx&&nx.t==="C"){const c=nx.x;if(!nv){syl+=c.join("")}else if(c.length===1){on=c[0]}else if(c.length===2){if(CL.has(c[0]+c[1]))on=c.join("");else{syl+=c[0];on=c[1]}}else if(c.length===3){if(CL.has(c[1]+c[2])){syl+=c[0];on=c[1]+c[2]}else{syl+=c[0]+c[1];on=c[2]}}else{syl+=c[0]+c[1];on=c.slice(2).join("")}}
+  out.push(syl)}
+ return out.length?out:[s]}
+function lastSyl(w){let r=norm(SYL(w).pop());if(r.startsWith("rr"))r=r.slice(1);return r}
+function firstSyl(w){return norm(SYL(w)[0])}
+let DIC=null,dicLoad=null;
+function loadDic(){if(DIC||dicLoad)return dicLoad;dicLoad=fetch("palabras.txt").then(r=>{if(!r.ok)throw 0;return r.text()}).then(t=>{DIC=new Set(t.split("\n"));if(room.st?.g==="cadena")render()}).catch(()=>{dicLoad=null});return dicLoad}
 function canChain(st){const p=(room.players||{})[me.uid];if(!p)return false;if(!team())return st.sg===me.uid;return who("cadena")==="one"?st.sg===me.uid:p.t===st.stm}
 async function chainEnd(st,why){const P=room.players||{},T=team(),one=!T||who("cadena")==="one",up={};let w,res;
  if(why==="t"){w=st.lw;res=`⏰ Se acabó el tiempo de <b>${esc(one?(P[st.sg]?.n||""):"Equipo "+tname(st.stm))}</b>.`}else{w=st.pw;res=`❌ «${esc(st.cw)}» no vale (${esc(P[st.lw]?.n||"")}).`}
@@ -2091,7 +2108,9 @@ const A={
  qsShow(){qsShown=room.st.gi+"_"+room.st.r;render()},
  chainSend(){const st=room.st,i=$("#ans"),f=$("#fb");if(!i||st.ph!=="round"||!canChain(st))return;const v=i.value.trim(),n=norm(v),bad=m=>{if(f)f.textContent="✗ "+m;i.select()};
   if(!/^[a-z]+$/i.test(v.normalize("NFD").replace(/[\u0300-\u036f]/g,"")))return bad("Escribe una sola palabra");if(n.length<3)return bad("Mínimo 3 letras");
-  if(!n.startsWith(norm(st.sy)))return bad("Tiene que empezar por «"+String(st.sy).toUpperCase()+"»");if((st.used||[]).includes(n))return bad("Esa ya ha salido");
+  if(!DIC){loadDic();return bad("Cargando el diccionario… prueba otra vez en un momento")}
+  if(!DIC.has(n))return bad("«"+v+"» no está en el diccionario");
+  if(firstSyl(v)!==st.sy)return bad("Su primera sílaba es «"+SYL(v)[0].toUpperCase()+"» y tiene que ser «"+String(st.sy).toUpperCase()+"» ("+SYL(v).join("-")+")");if((st.used||[]).includes(n))return bad("Esa ya ha salido");
   const ti=(st.ti||0)+1,TT=secs("cadena")*1000;i.value="";upd({cw:v,sy:lastSyl(v),ch:[...(st.ch||[]),{w:v,n:room.players[me.uid].n}],used:[...(st.used||[]),n],pw:st.lw||"",lw:me.uid,ti,...turnP(ti),end:now()+TT,tot:TT,pz:false})},
  noVale(){const st=room.st;if(st.ph==="round"&&st.lw)chainEnd(st,"x")},
  pcol(c){pc.c=c;pc.w=c==="#ffffff"?24:(pc.w===24?5:pc.w);render()},
@@ -2103,6 +2122,7 @@ const A={
  skipG(){toGend()},
  revancha(){const g=room.st.g;if(g)beginGame(g)},
  tema(){const i=TEMAS.findIndex(x=>x[0]===myTema()),n=TEMAS[(i+1)%TEMAS.length];try{localStorage.setItem("tema",n[0])}catch(x){}applyTema();toast("🎨 "+n[1],"plus");if(code)render()},
+ goNow(){const st=room.st;if(st.ph==="intro"&&(!st.end||st.end-now()>3300))upd({end:now()+3200,pz:false})},
  snd(){try{localStorage.setItem("snd",sndOn()?"0":"1")}catch(x){}render()},
  emo(v){try{localStorage.setItem("emo",v)}catch(x){}document.querySelectorAll("[data-a=emo]").forEach(b=>b.classList.toggle("on",b.dataset.v===v))},
  endS(){if(confirm("¿Terminar la sesión?"))upd({ph:"end",end:null,pz:false})},
@@ -2194,7 +2214,9 @@ function pickV(st,tv){const left=cfgGames().filter(g=>!(st.done||{})[g]);let nm=
  return `<div class="box center"><h2>Elige el siguiente juego: ${esc(nm)}</h2>${can?left.map(g=>`<button class="pri" data-a="pick" data-v="${g}">${GAMES[g].n}</button>`).join(""):`<p class="muted">Quedan: ${left.map(g=>GAMES[g].n).join(", ")}</p>`}</div>`+score(true)}
 function spinV(st){const left=cfgGames().filter(g=>!(st.done||{})[g]),L=left.length?left:[st.g],seq=[];for(let k=0;k<5;k++)sh([...L],Math.random).forEach(g=>seq.push(g));seq.push(st.g);
  return `<div class="box center"><h2>🎰 ¿Qué juego toca?</h2><div class="reel"><div style="--to:-${(seq.length-1)*64}px">${seq.map(g=>`<div>${GAMES[g].n}</div>`).join("")}</div></div><p class="muted">Quedan ${left.length} juegos</p></div>`+score(true)}
-function introV(st){const g=GAMES[st.g]||{};return `<div class="box center"><div class="muted">Juego ${st.gi} de ${cfgGames().length}</div><h1>${g.n}</h1><p>${g.rules}</p>${team()&&["speed","all","turn"].includes(g.k)?`<p class="muted">${who(st.g)==="one"?(g.k==="turn"?"Canta uno por equipo (va rotando)":"Contesta un portavoz por equipo (va rotando)"):(g.k==="turn"?"Canta todo el equipo":"Puede contestar todo el equipo")}</p>`:""}<div class="stage">${CLK}</div></div>`}
+function introV(st,tv){const g=GAMES[st.g]||{},T=team(),sg=Math.round(secs(st.g)*(["trivial","banderas","calculo"].includes(st.g)?{f:1.5,m:1,d:.6}[DIF()]:1));if(st.g==="cadena")loadDic();
+ const wh=T&&["speed","all","turn"].includes(g.k)?(who(st.g)==="one"?(g.k==="turn"?"Canta uno por equipo (va rotando)":"Contesta un portavoz por equipo (va rotando)"):(g.k==="turn"?"Canta todo el equipo":"Puede contestar todo el equipo")):"";
+ return `<div class="box center"><div class="muted">Siguiente juego · ${st.gi} de ${cfgGames().length}</div><h1>${g.n}</h1><div class="box" style="text-align:left;background:var(--bg)"><h2>📋 Cómo se juega</h2><p style="margin:0;font-size:1.1em">${g.rules}</p>${wh?`<p class="muted" style="margin:0">👥 ${wh}</p>`:""}<p class="muted" style="margin:0">⏱ ${g.k==="imp"?"Pistas sin límite y 30 s para votar":sg+" s por ronda"} · ${NR()} rondas</p></div><p class="muted">Empieza en…</p><div class="stage">${CLK}</div>${!tv&&amCtrl()?`<button class="pri" style="padding:16px" data-a="goNow">▶ Empezar ya</button>`:`<p class="muted">El anfitrión puede empezar antes</p>`}</div>`}
 function roundV(st,tv){const g=GAMES[st.g],it=item(st.g,st.p,st.r),hd=`<div class="muted center">${g.n} · Ronda ${st.r+1}/${NR()}${st.pz?" · ⏸ Pausa":""}</div>`;
  if(g.k==="turn")return cantaV(st,tv,it,hd);
  if(g.k==="imp")return impV(st,tv,it,hd);
@@ -2212,8 +2234,8 @@ function roundV(st,tv){const g=GAMES[st.g],it=item(st.g,st.p,st.r),hd=`<div clas
   else{const r=(st.resp||{})[mp?.t];h+=`<p class="muted center">${r?`Contesta <b>${esc(room.players[r]?.n||"?")}</b> por tu equipo`:"Mira la pantalla"}</p>`}}
  return h+`</div>`+(tv?score(true):"")}
 function chainV(st,tv,it,hd){const P=room.players,can=!tv&&canChain(st),C=!tv&&amCtrl(),one=!team()||who("cadena")==="one",nm=one?(P[st.sg]?.n||"?"):"Equipo "+tname(st.stm),ch=st.ch||[];
- let h=`<div class="box center">${hd}<div class="muted">${ch.slice(-6).map(x=>esc(x.w)).join(" → ")}</div><div>Turno de <b>${esc(nm)}</b> ${team()?tdot(st.stm):""}</div><div>Empieza por</div><div class="stage"><div class="big">${esc(String(st.sy||"").toUpperCase())}</div>${CLK}</div>`;
- if(can)h+=`<form data-f="chainSend" class="row"><input id="ans" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Palabra que empiece por ${esc(st.sy||"")}"><button class="pri">Enviar</button></form><div id="fb" class="muted center"></div>`;
+ let h=`<div class="box center">${hd}<div class="muted">${ch.slice(-6,-1).map(x=>esc(x.w)).join(" → ")}${ch.length>1?" → ":""}<b style="color:var(--fg)">${SYL(st.cw).map((x,k,a)=>k===a.length-1?`<u style="color:var(--accent)">${esc(x)}</u>`:esc(x)).join("·")}</b></div><div>Turno de <b>${esc(nm)}</b> ${team()?tdot(st.stm):""}</div><div>Primera sílaba tiene que ser</div><div class="stage"><div class="big">${esc(String(st.sy||"").toUpperCase())}</div>${CLK}</div>`;
+ if(can)h+=`<form data-f="chainSend" class="row"><input id="ans" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Palabra que empiece por la sílaba ${esc(st.sy||"")}"><button class="pri">Enviar</button></form><div id="fb" class="muted center"></div>`;
  if(C&&st.lw)h+=`<button class="bad" data-a="noVale">❌ «${esc(st.cw)}» no vale</button>`;
  return h+`</div>`+(tv?score(true):"")}
 function picV(st,tv,it,hd){const P=room.players,nm=P[st.sg]?.n||"?",D=!tv&&st.sg===me.uid,rid=st.gi+"_"+st.r,mp=P[me.uid];
