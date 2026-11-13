@@ -138,20 +138,20 @@ const CES=uniq(`amor corazón noche luna sol mar cielo fuego lluvia beso baila v
 const CEN=uniq(`love heart night moon sun sea sky fire rain kiss dance life time girl boy baby crazy party beach street city star dream fly free money car home mother father friend beautiful cry smile sing music guitar king queen forever never tomorrow yesterday summer winter flower rose red black blue white green wind water world road train boat airplane eyes lips hands soul god angel devil wine whiskey coffee dog bird horse lonely goodbye hello back remember tonight together alone happy sad fight heaven hell gold diamond rock roll honey sweet sugar candy touch hold broken tears always sleep wake day morning light dark shadow burn ice cold hot spring autumn storm thunder lightning stars ocean river mountain highway town country house door window wall bridge truck plane ship dollar rich poor prince princess crown hero ghost pray church bell wedding ring dress shoes jeans hat jacket mirror photo picture radio phone call letter song rhythm beat drum piano voice scream whisper secret lie truth trust promise war peace freedom rebel run walk jump fall rise high low fast slow young old wild mad fool liar lover enemy brother sister mama daddy woman man people death die live alive breathe mind blood bones skin face laugh yellow purple pink flowers garden tree leaves paradise magic wish hope faith believe miracle desire fever heat sunshine moonlight midnight sunrise sunset weekend friday saturday sunday monday december july video movie camera stage show crowd lights neon champagne bottle glass smoke dust desert island waves sand shore sailor pirate cowboy gun bullet arrow sword castle tower kingdom throne knight dragon monster vampire wolf tiger lion snake butterfly bee cat kitten`);
 
 const GAMES={
- huecos:{n:"Palabra con huecos",k:"speed",secs:30,rules:"Sale una palabra con letras escondidas (_).|Escribe la palabra completa; no importan tildes ni mayúsculas.|Puedes intentarlo las veces que quieras.|El primero que acierta gana +1."},
- anagrama:{n:"Anagrama",k:"speed",secs:40,rules:"Salen las letras de una palabra desordenadas.|Ordénalas y escribe la palabra; no importan tildes ni mayúsculas.|Puedes intentarlo las veces que quieras.|El primero que acierta gana +1."},
- calculo:{n:"Cálculo rápido",k:"speed",secs:20,rules:"Sale una operación: resuélvela y escribe el resultado.|La dificultad (fácil, media o difícil) cambia las operaciones y el tiempo.|El primero que acierta gana +1."},
- banderas:{n:"Banderas y capitales",k:"speed",secs:25,rules:"Sale una bandera, un país o una capital y hay que escribir lo que se pide.|Valen nombres alternativos (Holanda o Países Bajos, EEUU…) y sin tildes.|En fácil salen países conocidos; en difícil, los menos conocidos.|El primero que acierta gana +1."},
- colores:{n:"Colores trampa",k:"speed",secs:8,rules:"Sale el nombre de un color escrito en OTRO color.|Pulsa el botón del COLOR DE LA TINTA, no lo que pone.|Solo tienes un intento por ronda: si fallas, esperas a la siguiente.|El primero que acierta gana +1."},
- sinon:{n:"Sinónimos y antónimos",k:"speed",secs:30,rules:"Sale una palabra y se indica en verde si hay que escribir un SINÓNIMO o en rojo si es un ANTÓNIMO.|Vale cualquier sinónimo o antónimo de la lista; no importan tildes.|El primero que acierta gana +1."},
- trivial:{n:"Trivial",k:"all",secs:20,rules:"Pregunta con 4 opciones (3 en fácil). La tele, o el móvil del anfitrión, la lee en voz alta.|Cada uno contesta una sola vez; la ronda acaba cuando han contestado todos o se acaba el tiempo.|Acertar da +1 y el más rápido en acertar gana +1 extra.|Por equipos: el equipo suma +1 si acierta al menos la mitad, y +1 más si el más rápido es suyo."},
- colmena:{n:"Mente colmena",k:"all",secs:30,rules:"Sale un tema y cada uno escribe lo primero que se le ocurra.|Puntúas +1 si coincides con la respuesta más repetida (por equipos, con la de tu equipo).|No importan mayúsculas, tildes ni artículos: «La manzana» = «manzana».|Al final se ve lo que ha escrito cada uno."},
- impostor:{n:"El impostor",k:"imp",secs:90,rules:"Mantén pulsado 👁 para ver tu palabra; al soltar se esconde. El impostor ve «ERES EL IMPOSTOR».|Se sortea un orden: cuando te toque, di una pista sin decir la palabra y pulsa Siguiente.|Cuando todos estéis de acuerdo, el anfitrión pulsa ¡a votar! y cada uno toca a quien sospecha (30 s).|Si lo pilláis: +1 para todos los demás. Si no: el anfitrión elige otra ronda con la misma palabra o revelar (+2 para el impostor).|Por equipos: cada voto acertado da +1 a tu equipo y cada voto fallado de un equipo rival da +1 al equipo del impostor. Los compañeros del impostor solo suman si aciertan y el voto del impostor no cuenta. Si los equipos son desiguales, los votos se compensan.|Un móvil por equipo: se juega pasándose el móvil del anfitrión; cada uno ve su palabra en secreto, da su pista y vota con ese móvil. Se puntúa igual."},
- tabu:{n:"Tabú",k:"tabu",secs:45,rules:"Uno describe la palabra sin decir las 3 palabras prohibidas; los demás la adivinan en voz alta.|Individual: cuando alguien acierta, el que describe pulsa su nombre y ganan +1 los dos.|Por equipos: adivina su equipo; Acertada da +1 al equipo. El equipo rival ve la palabra y pulsa 🚫 ¡Tabú! si se dice una prohibida.|Pasar salta la palabra sin puntos."},
- quesoy:{n:"¿Qué soy?",k:"qs",secs:30,rules:"Al que le toca adivinar pulsa «Ya lo tengo en la frente» y se pone el móvil en la frente, mirando a los demás.|Los demás (o su equipo) le dan pistas sin decir la palabra. La tele también la muestra: ¡que no la mire!|Acierto da +1 al que adivina (y a su equipo); Paso salta la palabra."},
- cadena:{n:"Cadena de palabras",k:"chain",secs:12,rules:"La PRIMERA sílaba de tu palabra tiene que ser la ÚLTIMA sílaba de la anterior: ca·SA → SA·po vale, SAL·to no.|Solo valen palabras del diccionario (con plurales y verbos conjugados) y no se pueden repetir.|Cada turno tiene su tiempo. Si se te acaba, el que dijo la última palabra válida gana +1.|El anfitrión puede anular una palabra con ❌ no vale."},
- pictionary:{n:"Pictionary",k:"pic",secs:80,rules:"Uno dibuja la palabra en su móvil (colores, goma, fino o grueso, borrar) y los demás ven el dibujo en directo.|Los demás escriben qué es; la pista muestra cuántas letras tiene.|Acertar da +1 al que adivina y +1 al que dibuja.|Por equipos: adivina su equipo y en el último tercio del tiempo los rivales pueden robar el punto."},
- canta:{n:"Canta la palabra",k:"turn",secs:30,rules:"Al que le toca ve la palabra 5 segundos (en español, inglés o los dos).|Pulsa ¡Empezar a cantar! y tiene que cantar una canción que la lleve antes de que acabe el tiempo.|El anfitrión decide si vale (+1) y puede comprobarla en Spotify, Musixmatch o Genius.|Si falla, rebote: la misma palabra pasa al siguiente."}
+ huecos:{n:"Palabra con huecos",k:"speed",secs:35,rules:"Sale una palabra con letras escondidas (_).|Escribe la palabra completa; no importan tildes ni mayúsculas.|Puedes intentarlo las veces que quieras.|El primero que acierta gana +1."},
+ anagrama:{n:"Anagrama",k:"speed",secs:45,rules:"Salen las letras de una palabra desordenadas.|Ordénalas y escribe la palabra; no importan tildes ni mayúsculas.|Puedes intentarlo las veces que quieras.|El primero que acierta gana +1."},
+ calculo:{n:"Cálculo rápido",k:"speed",secs:25,rules:"Sale una operación: resuélvela y escribe el resultado.|La dificultad (fácil, media o difícil) cambia las operaciones y el tiempo.|El primero que acierta gana +1."},
+ banderas:{n:"Banderas y capitales",k:"speed",secs:30,rules:"Sale una bandera, un país o una capital y hay que escribir lo que se pide.|Valen nombres alternativos (Holanda o Países Bajos, EEUU…) y sin tildes.|En fácil salen países conocidos; en difícil, los menos conocidos.|El primero que acierta gana +1."},
+ colores:{n:"Colores trampa",k:"speed",secs:13,rules:"Sale el nombre de un color escrito en OTRO color.|Pulsa el botón del COLOR DE LA TINTA, no lo que pone.|Solo tienes un intento por ronda: si fallas, esperas a la siguiente.|El primero que acierta gana +1."},
+ sinon:{n:"Sinónimos y antónimos",k:"speed",secs:35,rules:"Sale una palabra y se indica en verde si hay que escribir un SINÓNIMO o en rojo si es un ANTÓNIMO.|Vale cualquier sinónimo o antónimo de la lista; no importan tildes.|El primero que acierta gana +1."},
+ trivial:{n:"Trivial",k:"all",secs:25,rules:"Pregunta con 4 opciones (3 en fácil). La tele, o el móvil del anfitrión, la lee en voz alta.|Cada uno contesta una sola vez; la ronda acaba cuando han contestado todos o se acaba el tiempo.|Acertar da +1 y el más rápido en acertar gana +1 extra.|En modo familia salen preguntas para niños.|Por equipos: el equipo suma +1 si acierta al menos la mitad, y +1 más si el más rápido es suyo."},
+ colmena:{n:"Mente colmena",k:"all",secs:35,rules:"Sale un tema y cada uno escribe lo primero que se le ocurra.|Puntúas +1 si coincides con la respuesta más repetida (por equipos, con la de tu equipo).|No importan mayúsculas, tildes ni artículos: «La manzana» = «manzana».|Al final se ve lo que ha escrito cada uno."},
+ impostor:{n:"El impostor",k:"imp",secs:95,rules:"Mantén pulsado 👁 para ver tu palabra; al soltar se esconde. El impostor ve «ERES EL IMPOSTOR».|Se sortea un orden: cuando te toque, di una pista sin decir la palabra y pulsa Siguiente.|Cuando todos estéis de acuerdo, el anfitrión pulsa ¡a votar! y cada uno toca a quien sospecha (35 s).|Si lo pilláis: +1 para todos los demás. Si no: el anfitrión elige otra ronda con la misma palabra o revelar (+2 para el impostor).|Por equipos: cada voto acertado da +1 a tu equipo y cada voto fallado de un equipo rival da +1 al equipo del impostor. Los compañeros del impostor solo suman si aciertan y el voto del impostor no cuenta. Si los equipos son desiguales, los votos se compensan.|Un móvil por equipo: se juega pasándose el móvil del anfitrión; cada uno ve su palabra en secreto, da su pista y vota con ese móvil. Se puntúa igual."},
+ tabu:{n:"Tabú",k:"tabu",secs:50,rules:"Uno describe la palabra sin decir las 3 palabras prohibidas; los demás la adivinan en voz alta.|Individual: cuando alguien acierta, el que describe pulsa su nombre y ganan +1 los dos.|Por equipos: adivina su equipo; Acertada da +1 al equipo. El equipo rival ve la palabra y pulsa 🚫 ¡Tabú! si se dice una prohibida.|Pasar salta la palabra sin puntos."},
+ quesoy:{n:"¿Qué soy?",k:"qs",secs:35,rules:"Al que le toca adivinar pulsa «Ya lo tengo en la frente» y se pone el móvil en la frente, mirando a los demás.|Los demás (o su equipo) le dan pistas sin decir la palabra. La tele también la muestra: ¡que no la mire!|Acierto da +1 al que adivina (y a su equipo); Paso salta la palabra."},
+ cadena:{n:"Cadena de palabras",k:"chain",secs:17,rules:"La PRIMERA sílaba de tu palabra tiene que ser la ÚLTIMA sílaba de la anterior: ca·SA → SA·po vale, SAL·to no.|Solo valen palabras del diccionario (con plurales y verbos conjugados) y no se pueden repetir.|Cada turno tiene su tiempo. Si se te acaba, el que dijo la última palabra válida gana +1.|El anfitrión puede anular una palabra con ❌ no vale."},
+ pictionary:{n:"Pictionary",k:"pic",secs:85,rules:"Uno dibuja la palabra en su móvil (colores, goma, fino o grueso, borrar) y los demás ven el dibujo en directo.|Los demás escriben qué es; la pista muestra cuántas letras tiene.|Acertar da +1 al que adivina y +1 al que dibuja.|Por equipos: adivina su equipo y en el último tercio del tiempo los rivales pueden robar el punto."},
+ canta:{n:"Canta la palabra",k:"turn",secs:35,rules:"Al que le toca ve la palabra 5 segundos (en español, inglés o los dos).|Pulsa ¡Empezar a cantar! y tiene que cantar una canción que la lleve antes de que acabe el tiempo.|El anfitrión decide si vale (+1) y puede comprobarla en Spotify, Musixmatch o Genius.|Si falla, rebote: la misma palabra pasa al siguiente."}
 };
 const TEAMS=[["Rojo","#ff5d73"],["Azul","#4da3ff"],["Verde","#3fdc8f"],["Amarillo","#ffcf3f"]];
 const EMO=["😀","😎","🤠","🥳","🤓","😺","🐶","🦊","🐼","🐸","🦁","🐵","🐯","🐷","🐙","🦄","🐝","🍕","🌮","🍩","⚽","🎸","🚀","👑"];
@@ -1825,6 +1825,148 @@ panda:bambú,China,oso
 camaleón:color,lengua,reptil
 avestruz:ave,correr,cabeza
 mapache:antifaz,basura,animal`.trim().split("\n").map(l=>{const[w,t]=l.split(":");return[w,[w,t]]})).values()];
+const TK=`¿Cuántas patas tiene un perro?|4|2|6|8
+¿Cuántas patas tiene una gallina?|2|4|6|3
+¿Cuántas patas tiene una araña?|8|6|4|10
+¿Cuántas patas tiene una hormiga?|6|8|4|2
+¿Qué animal nos da la leche que más bebemos?|Vaca|Cerdo|Gallina|Perro
+¿Qué animal pone huevos?|Gallina|Vaca|Perro|Gato
+¿Qué animal tiene trompa?|Elefante|Jirafa|León|Cebra
+¿Qué animal tiene el cuello muy largo?|Jirafa|Elefante|Cocodrilo|Oso
+¿Qué animal tiene rayas blancas y negras?|Cebra|León|Caballo|Vaca
+¿Qué animal salta y lleva a su cría en una bolsa?|Canguro|Conejo|Rana|Mono
+¿Qué come el conejo en los dibujos animados?|Zanahoria|Pescado|Hueso|Queso
+¿Qué le gusta comer al ratón en los cuentos?|Queso|Zanahoria|Hueso|Plátano
+¿Qué fruta le encanta al mono?|Plátano|Hueso|Queso|Pescado
+¿Dónde vive el pez?|En el agua|En un árbol|En una cueva|En el desierto
+¿Cuál de estos animales vuela?|Pájaro|Perro|Gato|Caballo
+¿Qué animal es muy lento y lleva su casa encima?|Caracol|Conejo|Perro|Ratón
+¿Qué hacen las abejas?|Miel|Leche|Huevos|Lana
+¿Qué nos da la oveja para hacer jerséis?|Lana|Plumas|Seda|Algodón
+¿Qué animal dice «miau»?|Gato|Perro|Vaca|Pato
+¿Qué animal dice «guau»?|Perro|Gato|Oveja|Gallo
+¿Qué animal dice «muuu»?|Vaca|Oveja|Cerdo|Pato
+¿Qué animal dice «cuac»?|Pato|Gallina|Rana|Perro
+¿Qué animal dice «quiquiriquí»?|Gallo|Pato|Perro|Vaca
+¿Qué animal dice «beee»?|Oveja|Vaca|Caballo|Gato
+¿Qué animal es el rey de la selva en los cuentos?|León|Elefante|Mono|Cebra
+¿Cuál es el animal más grande del mundo?|Ballena azul|Elefante|Jirafa|Oso
+¿Qué animal tiene caparazón?|Tortuga|Conejo|Perro|Pato
+¿Qué animal teje telarañas?|Araña|Hormiga|Mariposa|Abeja
+¿En qué se convierte una oruga?|Mariposa|Abeja|Mosca|Hormiga
+¿En qué se convierte un renacuajo?|Rana|Pez|Tortuga|Serpiente
+¿De qué color es el cielo cuando hace sol?|Azul|Verde|Rojo|Marrón
+¿De qué color es la hierba?|Verde|Azul|Rojo|Morado
+¿De qué color es un plátano maduro?|Amarillo|Azul|Morado|Negro
+¿De qué color es la nieve?|Blanco|Negro|Verde|Naranja
+¿De qué color es una fresa?|Rojo|Azul|Amarillo|Blanco
+¿De qué color es una zanahoria?|Naranja|Azul|Morado|Negro
+¿Qué color sale al mezclar azul y amarillo?|Verde|Rojo|Morado|Marrón
+¿Qué color sale al mezclar rojo y blanco?|Rosa|Verde|Azul|Negro
+¿Qué color sale al mezclar rojo y amarillo?|Naranja|Verde|Azul|Gris
+¿Cuántos colores tiene el arcoíris?|7|3|5|10
+¿Cuántos días tiene una semana?|7|5|10|12
+¿Cuántos meses tiene un año?|12|10|7|24
+¿Qué día va después del lunes?|Martes|Domingo|Jueves|Sábado
+¿Qué día va antes del domingo?|Sábado|Lunes|Viernes|Miércoles
+¿En qué estación hace más frío?|Invierno|Verano|Primavera|Otoño
+¿En qué estación hace más calor?|Verano|Invierno|Otoño|Primavera
+¿En qué estación se caen las hojas de muchos árboles?|Otoño|Verano|Primavera|Invierno
+¿En qué mes es Navidad?|Diciembre|Enero|Agosto|Marzo
+¿Qué día traen regalos los Reyes Magos?|6 de enero|25 de diciembre|1 de mayo|31 de octubre
+¿Cuántos dedos tienes en una mano?|5|4|6|10
+¿Cuántos ojos tenemos?|2|1|3|4
+¿Con qué oímos?|Con las orejas|Con los ojos|Con la nariz|Con las manos
+¿Con qué olemos?|Con la nariz|Con las orejas|Con los ojos|Con los pies
+¿Con qué vemos?|Con los ojos|Con las orejas|Con la boca|Con las manos
+¿Qué usamos para masticar?|Dientes|Orejas|Nariz|Codos
+¿Qué órgano late dentro del pecho?|Corazón|Estómago|Rodilla|Oreja
+¿A dónde viajan los astronautas?|Al espacio|Al fondo del mar|Al desierto|A la selva
+¿Cómo se llama el planeta donde vivimos?|La Tierra|Marte|Júpiter|Saturno
+¿Qué vemos en el cielo por la noche?|La Luna|El arcoíris|El Sol|Un avión de papel
+¿Qué nos da luz y calor durante el día?|El Sol|La Luna|Las estrellas|Las nubes
+¿Qué cae del cielo cuando llueve?|Agua|Arena|Hojas|Piedras
+¿En qué se convierte el agua cuando se congela?|Hielo|Vapor|Arena|Barro
+¿Qué necesitan las plantas para crecer?|Agua y sol|Chocolate|Zumo|Leche
+¿Qué fruta es roja o verde y crece en los árboles?|Manzana|Plátano|Kiwi|Limón
+¿Qué fruta es amarilla y muy ácida?|Limón|Fresa|Sandía|Cereza
+¿Qué fruta es grande, verde por fuera y roja por dentro?|Sandía|Manzana|Plátano|Naranja
+¿Qué postre frío se come mucho en verano?|Helado|Sopa|Pan|Tortilla
+¿Qué comemos en los cumpleaños con velas?|Tarta|Sopa|Ensalada|Pescado
+¿Qué hacemos con las velas de la tarta?|Soplarlas|Comérnoslas|Pintarlas|Guardarlas
+¿Qué usamos para cortar papel?|Tijeras|Cuchara|Peine|Lápiz
+¿Qué usamos para escribir en la pizarra?|Tiza|Tijeras|Pegamento|Regla
+¿Qué usamos para borrar lo que escribimos a lápiz?|Goma|Regla|Tijeras|Sacapuntas
+¿Qué usamos para peinarnos?|Peine|Tenedor|Cepillo de dientes|Cuchara
+¿Qué usamos cuando llueve para no mojarnos?|Paraguas|Gafas de sol|Bufanda|Guantes
+¿Qué nos ponemos en los pies?|Zapatos|Guantes|Gorro|Bufanda
+¿Qué nos ponemos en las manos cuando hace frío?|Guantes|Calcetines|Gafas|Cinturón
+¿Qué nos ponemos en la cabeza?|Gorro|Calcetines|Guantes|Pantalón
+¿Dónde dormimos?|En la cama|En la nevera|En la bañera|En el armario
+¿Dónde guardamos la comida para que esté fría?|En la nevera|En el horno|En el armario de la ropa|En la lavadora
+¿Qué aparato lava la ropa?|Lavadora|Nevera|Horno|Televisión
+¿Dónde nos lavamos los dientes?|En el baño|En el garaje|En el jardín|En el coche
+¿Qué medio de transporte va por las vías?|Tren|Barco|Avión|Bicicleta
+¿Qué medio de transporte vuela?|Avión|Tren|Coche|Barco
+¿Qué medio de transporte va por el mar?|Barco|Tren|Bicicleta|Moto
+¿Cuántas ruedas tiene una bicicleta?|2|3|4|6
+¿Cuántas ruedas tiene un coche?|4|2|3|6
+¿Qué color del semáforo significa que puedes pasar?|Verde|Rojo|Ámbar|Azul
+¿Qué color del semáforo significa que tienes que parar?|Rojo|Verde|Azul|Blanco
+¿Quién apaga los incendios?|Bombero|Panadero|Cartero|Pintor
+¿Quién nos cura cuando estamos malos?|Médico|Cartero|Bombero|Pescador
+¿Quién hace el pan?|Panadero|Bombero|Médico|Piloto
+¿Quién reparte las cartas?|Cartero|Panadero|Policía|Cocinero
+¿Quién conduce un avión?|Piloto|Bombero|Cartero|Profesor
+¿Quién nos enseña en el colegio?|Profesor|Cocinero|Fontanero|Piloto
+¿Qué forma tiene una pelota?|Redonda|Cuadrada|Triangular|Plana
+¿Cuántos lados tiene un triángulo?|3|4|5|6
+¿Cuántos lados tiene un cuadrado?|4|3|5|6
+¿Qué número va después del 9?|10|8|11|19
+¿Qué número va antes del 20?|19|21|18|10
+¿Cuál es el número más grande?|100|10|50|99
+¿Qué pesa más, un elefante o un ratón?|El elefante|El ratón|Pesan igual|Depende del día
+¿Qué muñeco de madera tiene una nariz que crece?|Pinocho|Peter Pan|Aladdín|Tarzán
+¿A quién iba a visitar Caperucita Roja?|A su abuela|A su tía|A su prima|A su profesora
+¿Qué perdió Cenicienta en el baile?|Un zapato|Un guante|Un collar|Un sombrero
+¿Cuántos enanitos vivían con Blancanieves?|7|5|3|10
+¿Qué fruta mordió Blancanieves?|Una manzana|Una pera|Un plátano|Una fresa
+¿Qué niño vuela y no quiere crecer?|Peter Pan|Pinocho|Shrek|Hércules
+¿Cuántos cerditos hay en el cuento del lobo?|3|2|4|7
+¿Qué animal sopla las casas de los tres cerditos?|Lobo|Oso|Zorro|León
+¿Qué deja el Ratoncito Pérez debajo de la almohada?|Un regalo|Un perro|Una tarta|Un coche
+¿Qué deporte se juega con un balón y dos porterías?|Fútbol|Tenis|Natación|Ciclismo
+¿En qué deporte se usa una raqueta?|Tenis|Fútbol|Baloncesto|Natación
+¿Dónde se nada?|En la piscina|En la biblioteca|En el cine|En el supermercado
+¿Qué instrumento tiene teclas blancas y negras?|Piano|Guitarra|Tambor|Flauta
+¿Qué instrumento se toca soplando?|Flauta|Tambor|Piano|Guitarra
+¿Qué instrumento se toca con palillos?|Tambor|Flauta|Piano|Violín
+¿Cuál es la capital de España?|Madrid|Barcelona|Sevilla|Valencia
+¿Cuántas uvas se comen en Nochevieja?|12|7|10|20
+¿En qué país están las pirámides más famosas?|Egipto|Francia|Japón|Brasil
+¿En qué ciudad está la Torre Eiffel?|París|Roma|Madrid|Londres
+¿Dónde viven los pingüinos?|Donde hace mucho frío|En el desierto|En la selva|En las ciudades
+¿Qué animal blanco vive en el Polo Norte?|Oso polar|León|Jirafa|Camello
+¿Qué animal aguanta mucho sin beber en el desierto?|Camello|Pingüino|Delfín|Rana
+¿Qué eran los dinosaurios?|Animales de hace muchísimo tiempo|Juguetes modernos|Árboles gigantes|Frutas
+¿Qué tenemos que hacer antes de comer?|Lavarnos las manos|Dormir|Bañarnos en la piscina|Ver la tele
+¿Cuál de estos alimentos es más sano?|Fruta|Chucherías|Patatas fritas de bolsa|Gominolas
+¿Qué es mejor beber cuando tienes sed?|Agua|Refresco|Café|Batido de chocolate
+¿Qué hay que hacer al cruzar la calle?|Mirar a los dos lados|Correr sin mirar|Cerrar los ojos|Ir saltando
+¿Qué se pone en la carta a los Reyes Magos?|Los regalos que quieres|La lista de la compra|Los deberes|Un dibujo del colegio
+¿Qué animal hace «oink»?|Cerdo|Vaca|Gallina|Pato
+¿Qué animal tiene melena?|León|Tigre|Oso|Lobo
+¿Qué animal es naranja con rayas negras?|Tigre|León|Cebra|Jirafa
+¿Qué animal es muy grande, gris y vive en el río en África?|Hipopótamo|Ratón|Pingüino|Conejo
+¿Qué animal salta mucho y croa?|Rana|Pato|Gato|Perro
+¿Qué ave no puede volar y vive en el hielo?|Pingüino|Paloma|Loro|Águila
+¿Cuál de estos animales tiene plumas?|Gallina|Perro|Pez|Rana
+¿Cuántas patas tiene un gato?|4|2|6|8`.trim().split("\n").map(l=>l.split("|"));
+{const gr=R(777),AP=[["grande","pequeño"],["alto","bajo"],["frío","caliente"],["día","noche"],["rápido","lento"],["feliz","triste"],["lleno","vacío"],["abrir","cerrar"],["subir","bajar"],["limpio","sucio"],["nuevo","viejo"],["fuerte","débil"],["mucho","poco"],["dentro","fuera"],["encima","debajo"],["blanco","negro"],["duro","blando"],["ganar","perder"],["entrar","salir"],["cerca","lejos"]],pk=(x,n)=>{const w=new Set();while(w.size<n){const p=AP[Math.floor(gr()*AP.length)],c=p[Math.floor(gr()*2)];if(!x.includes(c))w.add(c)}return[...w]};
+ AP.forEach(([a,b])=>{TK.push([`¿Qué es lo contrario de ${a.toUpperCase()}?`,b,...pk([a,b],3)]);TK.push([`¿Qué es lo contrario de ${b.toUpperCase()}?`,a,...pk([a,b],3)])});
+ const CP=[["Francia","París"],["Italia","Roma"],["Portugal","Lisboa"],["Alemania","Berlín"],["Reino Unido","Londres"],["Japón","Tokio"],["Estados Unidos","Washington"],["México","Ciudad de México"],["Argentina","Buenos Aires"],["Grecia","Atenas"],["Rusia","Moscú"],["China","Pekín"],["Egipto","El Cairo"]];
+ CP.forEach(([p,c],k)=>{const w=[];for(let j=1;w.length<3;j++)w.push(CP[(k+j*4)%CP.length][1]);TK.push([`¿Cuál es la capital de ${p}?`,c,...w])});
+ while(TK.length<270){const a=1+Math.floor(gr()*10),b=1+Math.floor(gr()*10),su=gr()<.7,x=su?a:Math.max(a,b),y=su?b:Math.min(a,b),r=su?x+y:x-y,w=[r+1,r+2,r>0?r-1:r+3];TK.push([`¿Cuánto es ${x} ${su?"+":"−"} ${y}?`,String(r),...w.map(String)])}}
 const COLS=[["ROJO","#ff3b3b"],["AZUL","#3b82ff"],["VERDE","#22c55e"],["AMARILLO","#facc15"],["MORADO","#a855f7"],["NARANJA","#fb923c"],["ROSA","#f472b6"],["BLANCO","#ffffff"]];
 const cap=w=>String(w).charAt(0).toUpperCase()+String(w).slice(1);
 const sh=(a,rn)=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rn()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -1856,7 +1998,7 @@ function itemI(g,i){const rn=R(i*7919+g.length*104729);
   if(t===1)return{h:"¿Cuál es la capital de…?",q:pais.split("|")[0],a:capi};
   return{h:"¿De qué país es capital…?",q:capi.split("|")[0],a:pais}}
  if(g==="colores"){const C=COLS.length,w=Math.floor(rn()*C);let k=Math.floor(rn()*(C-1));if(k>=w)k++;const o=new Set([k,w]);while(o.size<4)o.add(Math.floor(rn()*C));return{h:"Pulsa el color de la TINTA",q:COLS[w][0],ink:COLS[k][1],a:COLS[k][0].toLowerCase(),opts:sh([...o].map(x=>COLS[x][0]),rn)}}
- if(g==="trivial"){const e=TQ[(i*53)%TQ.length];return{h:"Trivial",q:e[0],a:e[1],opts:sh(e.slice(1,DIF()==="f"?4:5),rn),lg:1}}
+ if(g==="trivial"){const QQ=room.cfg?.fam?TK:TQ,ii=room.cfg?.fam?Math.floor(i/10)*5+i%10:i,e=QQ[(ii*53)%QQ.length];return{h:"Trivial",q:e[0],a:e[1],opts:sh(e.slice(1,DIF()==="f"?4:5),rn),lg:1}}
  if(g==="colmena")return{h:"Escribe lo que crees que dirá la mayoría",q:CM[(i*59)%CM.length],a:"",lg:1};
  if(g==="impostor"){const w=PAL[(i*61+97)%PAL.length];return{q:w,a:w}}
  if(g==="tabu"){const e=TB[(i*71)%TB.length];return{q:e[0],a:e[0],tb:e[1].split(",")}}
@@ -2122,7 +2264,7 @@ const A={
  ppTalk(){const st=room.st;if(!amCtrl()||!st.M)return;upd({oi:(st.oi||0)+1})},
  ppVote(){const st=room.st;if(!amCtrl()||!st.M)return;upd({sub:"pvote",vi:0,pv:null,ord:sh([...st.M.keys()],Math.random)})},
  ppPick(v){const st=room.st;if(!amCtrl()||!st.M||st.sub!=="pvote")return;const vi=st.vi||0,voter=st.ord[vi];if(+v===voter)return;const pv={...(st.pv||{}),["v"+voter]:+v};if(vi+1>=st.M.length)return scorePass({...st,pv});upd({pv,vi:vi+1})},
- toVote(){upd({sub:"vote",end:now()+30000,tot:30000,pz:false})},
+ toVote(){upd({sub:"vote",end:now()+35000,tot:35000,pz:false})},
  tbOk(g){const st=room.st,rid=st.gi+"_"+st.r;if(st.ph!=="round"||myFb===rid+"t")return;myFb=rid+"t";tabuOk(st,g||"")},
  tbNo(v){const st=room.st,rid=st.gi+"_"+st.r;if(st.ph!=="round"||myFb===rid+"t")return;myFb=rid+"t";upd({ph:"reveal",end:now()+4500,tot:4500,pz:false,win:null,sub:null,res:v==="tabu"?"🚫 ¡Tabú! Se ha dicho una palabra prohibida":"⏭ Pasada"})},
  qsOk(){const st=room.st,rid=st.gi+"_"+st.r;if(st.ph!=="round"||myFb===rid+"t")return;myFb=rid+"t";reveal({u:st.sg,t:st.stm})},
@@ -2238,7 +2380,7 @@ function spinV(st){const left=cfgGames().filter(g=>!(st.done||{})[g]),L=left.len
  return `<div class="box center"><h2>🎰 ¿Qué juego toca?</h2><div class="reel"><div style="--to:-${(seq.length-1)*64}px">${seq.map(g=>`<div>${GAMES[g].n}</div>`).join("")}</div></div><p class="muted">Quedan ${left.length} juegos</p></div>`+score(true)}
 function introV(st,tv){const g=GAMES[st.g]||{},T=team(),sg=Math.round(secs(st.g)*(["trivial","banderas","calculo"].includes(st.g)?{f:1.5,m:1,d:.6}[DIF()]:1));if(st.g==="cadena")loadDic();
  const wh=T&&["speed","all","turn"].includes(g.k)?(who(st.g)==="one"?(g.k==="turn"?"Canta uno por equipo (va rotando)":"Contesta un portavoz por equipo (va rotando)"):(g.k==="turn"?"Canta todo el equipo":"Puede contestar todo el equipo")):"";
- return `<div class="box center"><div class="muted">Siguiente juego · ${st.gi} de ${cfgGames().length}</div><h1>${g.n}</h1><div class="box" style="text-align:left;background:var(--bg)"><h2>📋 Cómo se juega</h2><ul style="margin:0;padding-left:1.2em;font-size:1.05em;display:flex;flex-direction:column;gap:6px">${String(g.rules).split("|").map(x=>`<li>${x}</li>`).join("")}</ul>${wh&&!ONE()?`<p class="muted" style="margin:0">👥 ${wh}</p>`:""}${ONE()&&st.g==="impostor"?`<p style="margin:0">📱 <b>Un móvil por equipo:</b> se juega pasándose el móvil del anfitrión. Cada uno ve su palabra en secreto, se dan las pistas en orden y luego vota cada uno con ese móvil. Puntos: cada voto acertado da +1 a su equipo; cada voto fallado de un equipo rival da +1 al equipo del impostor; los compañeros del impostor solo suman si aciertan y el voto del impostor no cuenta.</p>`:""}${ONE()&&st.g==="pictionary"?`<p style="margin:0">📱 <b>Un móvil por equipo:</b> el equipo que dibuja adivina en voz alta y el que dibuja pulsa «Lo ha adivinado mi equipo». Los otros equipos ven la palabra para vigilar.</p>`:""}<p class="muted" style="margin:0">⏱ ${g.k==="imp"?"Pistas sin límite y 30 s para votar":sg+" s por ronda"} · ${NR()} rondas${TURNK.includes(g.k)?` (${room.cfg.vueltas||1} turno${(room.cfg.vueltas||1)>1?"s":""} para cada ${T?"equipo":"jugador"})`:""}</p></div><p class="muted">Empieza en…</p><div class="stage">${CLK}</div>${!tv&&amCtrl()?`<button class="pri" style="padding:16px" data-a="goNow">▶ Empezar ya</button>`:`<p class="muted">El anfitrión puede empezar antes</p>`}</div>`}
+ return `<div class="box center"><div class="muted">Siguiente juego · ${st.gi} de ${cfgGames().length}</div><h1>${g.n}</h1><div class="box" style="text-align:left;background:var(--bg)"><h2>📋 Cómo se juega</h2><ul style="margin:0;padding-left:1.2em;font-size:1.05em;display:flex;flex-direction:column;gap:6px">${String(g.rules).split("|").map(x=>`<li>${x}</li>`).join("")}</ul>${wh&&!ONE()?`<p class="muted" style="margin:0">👥 ${wh}</p>`:""}${ONE()&&st.g==="impostor"?`<p style="margin:0">📱 <b>Un móvil por equipo:</b> se juega pasándose el móvil del anfitrión. Cada uno ve su palabra en secreto, se dan las pistas en orden y luego vota cada uno con ese móvil. Puntos: cada voto acertado da +1 a su equipo; cada voto fallado de un equipo rival da +1 al equipo del impostor; los compañeros del impostor solo suman si aciertan y el voto del impostor no cuenta.</p>`:""}${ONE()&&st.g==="pictionary"?`<p style="margin:0">📱 <b>Un móvil por equipo:</b> el equipo que dibuja adivina en voz alta y el que dibuja pulsa «Lo ha adivinado mi equipo». Los otros equipos ven la palabra para vigilar.</p>`:""}<p class="muted" style="margin:0">⏱ ${g.k==="imp"?"Pistas sin límite y 35 s para votar":sg+" s por ronda"} · ${NR()} rondas${TURNK.includes(g.k)?` (${room.cfg.vueltas||1} turno${(room.cfg.vueltas||1)>1?"s":""} para cada ${T?"equipo":"jugador"})`:""}</p></div><p class="muted">Empieza en…</p><div class="stage">${CLK}</div>${!tv&&amCtrl()?`<button class="pri" style="padding:16px" data-a="goNow">▶ Empezar ya</button>`:`<p class="muted">El anfitrión puede empezar antes</p>`}</div>`}
 function roundV(st,tv){const g=GAMES[st.g],it=item(st.g,st.p,st.r),hd=`<div class="muted center">${g.n} · Ronda ${st.r+1}/${NR()}${st.pz?" · ⏸ Pausa":""}</div>`;
  if(g.k==="turn")return cantaV(st,tv,it,hd);
  if(g.k==="imp")return impV(st,tv,it,hd);
