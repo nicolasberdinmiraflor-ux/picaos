@@ -15,7 +15,13 @@
 *{box-sizing:border-box}[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;background-image:radial-gradient(ellipse 70% 45% at 50% 0%,#3b2a6b 0%,transparent 70%);background-attachment:fixed;min-height:100vh}
 .wrap{max-width:640px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-right)) 24px max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;gap:14px}
-body.tv .wrap{max-width:1200px;font-size:1.4em}
+body.tv .wrap{max-width:none;font-size:clamp(16px,1.55vw,30px);display:grid;grid-template-columns:minmax(0,1.9fr) minmax(260px,1fr);gap:1.2vw 2vw;align-items:start;padding:2vh 2.5vw;min-height:100vh;box-sizing:border-box}
+body.tv .wrap>*{grid-column:1;min-width:0}
+body.tv .wrap>.row:first-child{grid-column:1/-1}
+body.tv .wrap>.scb{grid-column:2;grid-row:2/span 30;position:sticky;top:2vh}
+body.tv .wrap>h1,body.tv .wrap>.conf{grid-column:1/-1}
+body.tv .wrap:has(>.logo){display:flex;max-width:1100px}
+body.tv #qr img,body.tv #qr canvas{width:min(30vh,320px)!important;height:auto!important}
 h1{margin:0;text-align:center;color:var(--accent);font-size:1.8em}h2{margin:0;font-size:1.15em}
 .box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.center{text-align:center;align-items:center}.muted{color:var(--muted)}
@@ -25,12 +31,12 @@ button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:10px 14p
 button.pri{background:var(--accent);color:#1a1230}button.ok{background:var(--ok);color:#06281a}button.bad{background:var(--bad);color:#2e0710}
 button.on{outline:3px solid var(--accent);outline-offset:2px}
 .big{font-size:clamp(1.8rem,9vw,3.6rem);font-weight:900;text-align:center;letter-spacing:.04em;overflow-wrap:anywhere;line-height:1.1}
-body.tv .big{font-size:5.5rem}
+body.tv .big{font-size:min(5.5rem,10vh)}
 .stage{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
 .clk{--p:1;width:84px;height:84px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*360deg),var(--line) 0);display:grid;place-items:center;flex:none}
 .clk b{width:68px;height:68px;border-radius:50%;background:var(--panel);display:grid;place-items:center;font-size:1.8rem}
 .clk.low{background:conic-gradient(var(--bad) calc(var(--p)*360deg),var(--line) 0)}.clk.low b{color:var(--bad)}
-body.tv .clk{width:170px;height:170px}body.tv .clk b{width:140px;height:140px;font-size:3.6rem}
+body.tv .clk{width:min(170px,20vh);height:min(170px,20vh)}body.tv .clk b{width:82%;height:82%;font-size:min(3.6rem,7vh)}
 .list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .list li{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--bg);flex-wrap:wrap}
 .list .n{flex:1;overflow-wrap:anywhere;min-width:100px}.list .p{font-weight:900;color:var(--accent);font-size:1.2em}
@@ -1961,12 +1967,54 @@ const TK=`¿Cuántas patas tiene un perro?|4|2|6|8
 ¿Qué animal salta mucho y croa?|Rana|Pato|Gato|Perro
 ¿Qué ave no puede volar y vive en el hielo?|Pingüino|Paloma|Loro|Águila
 ¿Cuál de estos animales tiene plumas?|Gallina|Perro|Pez|Rana
-¿Cuántas patas tiene un gato?|4|2|6|8`.trim().split("\n").map(l=>l.split("|"));
+¿Cuántas patas tiene un gato?|4|2|6|8
+¿Cuántas patas tiene un caballo?|4|2|6|8
+¿Cuántas alas tiene un pájaro?|2|4|1|6
+¿Qué animal tiene una o dos jorobas?|Camello|Caballo|Vaca|Oveja
+¿Qué animal tiene ocho brazos y vive en el mar?|Pulpo|Delfín|Tiburón|Tortuga
+¿Qué animal es el mejor amigo de las personas?|Perro|Ratón|Serpiente|Mosca
+¿Qué animal tiene púas?|Erizo|Gato|Conejo|Pato
+¿Qué animal duerme colgado boca abajo?|Murciélago|Perro|Gallina|Caballo
+¿Qué animal salta de rama en rama?|Mono|Vaca|Pato|Tortuga
+¿De qué color es un tomate maduro?|Rojo|Azul|Morado|Blanco
+¿De qué color es la leche?|Blanca|Verde|Roja|Azul
+¿De qué color es el carbón?|Negro|Blanco|Amarillo|Rosa
+¿Qué fruta tiene pinchos por fuera y es amarilla por dentro?|Piña|Manzana|Pera|Uva
+¿Qué verdura hace llorar al cortarla?|Cebolla|Lechuga|Zanahoria|Tomate
+¿De qué se hacen las patatas fritas?|De patatas|De manzanas|De arroz|De pan
+¿Con qué se hace el pan?|Con harina|Con azúcar|Con chocolate|Con queso
+¿Qué letra va después de la A?|B|C|D|Z
+¿Qué letra va antes de la Z?|Y|X|W|A
+¿Cuál es la primera letra del abecedario?|A|B|Z|M
+¿Cuántas vocales hay?|5|4|6|7
+¿Cuál de estas letras es una vocal?|E|B|M|T
+¿Cuántas horas tiene un día?|24|12|10|60
+¿Cuántos minutos tiene una hora?|60|100|24|30
+¿Qué usamos para saber la hora?|Reloj|Termómetro|Regla|Brújula
+¿Qué usamos para ver si tenemos fiebre?|Termómetro|Reloj|Regla|Báscula
+¿Qué hay que abrocharse siempre en el coche?|El cinturón|Un sombrero|Unos guantes|Una bufanda
+¿Qué hay que ponerse en la cabeza para ir en bici?|Casco|Gorro de lana|Corona|Sombrero de copa
+¿Qué hacemos cuando tenemos sueño?|Dormir|Correr|Bailar|Cantar
+¿En qué mes empieza el año?|Enero|Diciembre|Marzo|Septiembre
+¿Dónde se compran las medicinas?|Farmacia|Panadería|Zapatería|Librería
+¿Dónde se compran los libros?|Librería|Farmacia|Frutería|Carnicería
+¿Dónde se compra el pan?|Panadería|Farmacia|Librería|Gasolinera
+¿Dónde podemos ver leones, jirafas y elefantes?|En el zoo|En el supermercado|En el colegio|En el cine
+¿Qué usa un pintor?|Pincel|Martillo|Tijeras|Escoba
+¿Con qué se barre el suelo?|Escoba|Tenedor|Peine|Lápiz
+¿Qué sale en el cielo cuando llueve y hace sol a la vez?|Arcoíris|La Luna|Las estrellas|Nieve
+¿Para qué sirve un despertador?|Para despertarnos|Para dar de comer|Para lavar la ropa|Para encender la luz
+¿Qué juego tiene fichas, un dado y casillas de colores?|Parchís|Fútbol|Ajedrez|Tenis
+¿Cuántas caras tiene un dado?|6|4|8|5
+¿Qué animal tiene la nariz muy larga para comer hormigas?|Oso hormiguero|Elefante|Perro|Gato
+¿Qué animal es rosa y está siempre en el barro?|Cerdo|Oveja|Gallina|Caballo
+¿Cuál es el planeta con anillos más famoso?|Saturno|La Tierra|Marte|Venus`.trim().split("\n").map(l=>l.split("|"));
 {const gr=R(777),AP=[["grande","pequeño"],["alto","bajo"],["frío","caliente"],["día","noche"],["rápido","lento"],["feliz","triste"],["lleno","vacío"],["abrir","cerrar"],["subir","bajar"],["limpio","sucio"],["nuevo","viejo"],["fuerte","débil"],["mucho","poco"],["dentro","fuera"],["encima","debajo"],["blanco","negro"],["duro","blando"],["ganar","perder"],["entrar","salir"],["cerca","lejos"]],pk=(x,n)=>{const w=new Set();while(w.size<n){const p=AP[Math.floor(gr()*AP.length)],c=p[Math.floor(gr()*2)];if(!x.includes(c))w.add(c)}return[...w]};
  AP.forEach(([a,b])=>{TK.push([`¿Qué es lo contrario de ${a.toUpperCase()}?`,b,...pk([a,b],3)]);TK.push([`¿Qué es lo contrario de ${b.toUpperCase()}?`,a,...pk([a,b],3)])});
  const CP=[["Francia","París"],["Italia","Roma"],["Portugal","Lisboa"],["Alemania","Berlín"],["Reino Unido","Londres"],["Japón","Tokio"],["Estados Unidos","Washington"],["México","Ciudad de México"],["Argentina","Buenos Aires"],["Grecia","Atenas"],["Rusia","Moscú"],["China","Pekín"],["Egipto","El Cairo"]];
  CP.forEach(([p,c],k)=>{const w=[];for(let j=1;w.length<3;j++)w.push(CP[(k+j*4)%CP.length][1]);TK.push([`¿Cuál es la capital de ${p}?`,c,...w])});
- while(TK.length<270){const a=1+Math.floor(gr()*10),b=1+Math.floor(gr()*10),su=gr()<.7,x=su?a:Math.max(a,b),y=su?b:Math.min(a,b),r=su?x+y:x-y,w=[r+1,r+2,r>0?r-1:r+3];TK.push([`¿Cuánto es ${x} ${su?"+":"−"} ${y}?`,String(r),...w.map(String)])}}
+ while(TK.length<266){const a=1+Math.floor(gr()*10),b=1+Math.floor(gr()*10),su=gr()<.7,x=su?a:Math.max(a,b),y=su?b:Math.min(a,b),r=su?x+y:x-y,w=[r+1,r+2,r>0?r-1:r+3];TK.push([`¿Cuánto es ${x} ${su?"+":"−"} ${y}?`,String(r),...w.map(String)])}}
+{const mix=(a,sd)=>{const rn=R(sd);for(let i=a.length-1;i>0;i--){const j=Math.floor(rn()*(i+1));[a[i],a[j]]=[a[j],a[i]]}};mix(PAL,101);mix(CES,102);mix(CEN,103);mix(TB,104);mix(TQ,105);mix(TK,106);mix(CM,107);mix(SP,108);mix(PAISES,109)}
 const COLS=[["ROJO","#ff3b3b"],["AZUL","#3b82ff"],["VERDE","#22c55e"],["AMARILLO","#facc15"],["MORADO","#a855f7"],["NARANJA","#fb923c"],["ROSA","#f472b6"],["BLANCO","#ffffff"]];
 const cap=w=>String(w).charAt(0).toUpperCase()+String(w).slice(1);
 const sh=(a,rn)=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(rn()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -1998,7 +2046,7 @@ function itemI(g,i){const rn=R(i*7919+g.length*104729);
   if(t===1)return{h:"¿Cuál es la capital de…?",q:pais.split("|")[0],a:capi};
   return{h:"¿De qué país es capital…?",q:capi.split("|")[0],a:pais}}
  if(g==="colores"){const C=COLS.length,w=Math.floor(rn()*C);let k=Math.floor(rn()*(C-1));if(k>=w)k++;const o=new Set([k,w]);while(o.size<4)o.add(Math.floor(rn()*C));return{h:"Pulsa el color de la TINTA",q:COLS[w][0],ink:COLS[k][1],a:COLS[k][0].toLowerCase(),opts:sh([...o].map(x=>COLS[x][0]),rn)}}
- if(g==="trivial"){const QQ=room.cfg?.fam?TK:TQ,ii=room.cfg?.fam?Math.floor(i/10)*5+i%10:i,e=QQ[(ii*53)%QQ.length];return{h:"Trivial",q:e[0],a:e[1],opts:sh(e.slice(1,DIF()==="f"?4:5),rn),lg:1}}
+ if(g==="trivial"){const QQ=room.cfg?.fam?TK:TQ,ii=room.cfg?.fam?Math.floor(i/10)*5+i%10:i,e=QQ[room.cfg?.fam?ii%QQ.length:(ii*53)%QQ.length];return{h:"Trivial",q:e[0],a:e[1],opts:sh(e.slice(1,DIF()==="f"?4:5),rn),lg:1}}
  if(g==="colmena")return{h:"Escribe lo que crees que dirá la mayoría",q:CM[(i*59)%CM.length],a:"",lg:1};
  if(g==="impostor"){const w=PAL[(i*61+97)%PAL.length];return{q:w,a:w}}
  if(g==="tabu"){const e=TB[(i*71)%TB.length];return{q:e[0],a:e[0],tb:e[1].split(",")}}
@@ -2355,7 +2403,7 @@ function lobbyV(st,tv){const c=room.cfg,H=isHost()&&!tv,T=team();
  let h=`<div class="box center"><h2>Únete escaneando el código</h2><div id="qr"></div><div class="big">${code}</div><div class="muted">${esc(BASE)}?sala=${code}</div></div>`;
  if(!tv&&T&&c.form==="elegir"){const mt=room.players[me.uid].t;h+=`<div class="box"><h2>Elige equipo</h2><div class="row">${TEAMS.slice(0,c.teams).map((t,i)=>`<button data-a="team" data-v="${i}" class="${mt===i?"on":""}" style="background:${t[1]};color:#111">${t[0]}</button>`).join("")}</div></div>`}
  if(!tv&&ONE()){const mp=room.players[me.uid];h+=`<div class="box"><h2>👥 ¿Quiénes sois en tu equipo?</h2><div class="row"><input id="mem" type="text" maxlength="120" placeholder="Ana, Luis, Marta" value="${esc(mp?.m||"")}"><button class="pri" data-a="mem">Guardar</button></div><div class="muted" style="font-size:.9em">Separados por comas. Se usan en El impostor.</div></div>`}
- h+=`<div class="box"><h2>${ONE()?"Equipos":"Jugadores"} (${ps().length}/${ONE()?room.cfg.teams:MAXP})</h2>${plist(H)}</div>`;
+ h+=`<div class="box scb"><h2>${ONE()?"Equipos":"Jugadores"} (${ps().length}/${ONE()?room.cfg.teams:MAXP})</h2>${plist(H)}</div>`;
  if(H)h+=cfgV(c);else if(!tv)h+=`<div class="box center muted">Esperando a que el anfitrión empiece…</div>`;
  if(!tv)h+=`<button data-a="${H?"close":"out"}">${H?"Cerrar sala":"Salir de la sala"}</button>`;
  return h}
@@ -2396,6 +2444,7 @@ function roundV(st,tv){const g=GAMES[st.g],it=item(st.g,st.p,st.r),hd=`<div clas
   else if(canAns(me.uid,st)&&it.opts)h+=`<div class="row opts${st.g==="colores"?" nocol":""}" style="justify-content:center">${it.opts.map(o=>`<button style="flex:1 1 40%;padding:18px;font-size:1.1em" data-a="pickAns" data-v="${o}">${o}</button>`).join("")}</div>`;
   else if(canAns(me.uid,st))h+=`<form data-f="ans" class="row"><input id="ans" type="text" ${st.g==="calculo"?'inputmode="numeric"':""} autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Tu respuesta"><button class="pri">Enviar</button></form><div id="fb" class="muted center"></div>`;
   else{const r=(st.resp||{})[mp?.t];h+=`<p class="muted center">${r?`Contesta <b>${esc(room.players[r]?.n||"?")}</b> por tu equipo`:"Mira la pantalla"}</p>`}}
+ if(tv&&it.opts)h+=`<div class="row opts${st.g==="colores"?" nocol":""}" style="justify-content:center">${it.opts.map(o=>`<button tabindex="-1" style="flex:1 1 40%;padding:2.2vh;font-size:1.2em;pointer-events:none">${esc(o)}</button>`).join("")}</div>`;
  return h+`</div>`+(tv?score(true):"")}
 function chainV(st,tv,it,hd){const P=room.players,can=!tv&&canChain(st),C=!tv&&amCtrl(),one=!team()||who("cadena")==="one",nm=one?(P[st.sg]?.n||"?"):"Equipo "+tname(st.stm),ch=st.ch||[];
  let h=`<div class="box center">${hd}<div class="muted">${ch.slice(-6,-1).map(x=>esc(x.w)).join(" → ")}${ch.length>1?" → ":""}<b style="color:var(--fg)">${SYL(st.cw).map((x,k,a)=>k===a.length-1?`<u style="color:var(--accent)">${esc(x)}</u>`:esc(x)).join("·")}</b></div><div>Turno de <b>${esc(nm)}</b> ${team()?tdot(st.stm):""}</div><div>Primera sílaba tiene que ser</div><div class="stage"><div class="big">${esc(String(st.sy||"").toUpperCase())}</div>${CLK}</div>`;
@@ -2463,7 +2512,7 @@ function podium(){const sc=room.sc||{},T=team();let l;
  return `<div class="pod">${o.map((x,k)=>x?`<div><div class="nm" style="animation-delay:${[.6,1,.3][k]}s">${M[k]}<br>${esc(x.n)}</div><div class="bar" style="height:${H[k]}px;background:${x.c};animation-delay:${[.3,.6,0][k]}s">${x.p}</div></div>`:"<div></div>").join("")}</div>`}
 function confetti(){const C=["#ffcf3f","#ff5d73","#4da3ff","#3fdc8f","#a855f7","#fb923c"];let h="";for(let k=0;k<70;k++)h+=`<i style="left:${Math.random()*100}%;background:${C[k%6]};animation-duration:${3+Math.random()*4}s;animation-delay:${-Math.random()*6}s"></i>`;return `<div class="conf" aria-hidden="true">${h}</div>`}
 function endV(st,tv){const hs=st.hist||{};return confetti()+`<h1>🏆 ¡Fin de la sesión!</h1><div class="box">${podium()}</div>`+(Object.keys(hs).length?`<div class="box"><h2>Resumen</h2><ul class="list">${Object.keys(hs).map(g=>`<li><span class="n">${GAMES[g]?.n||g}</span><b>${esc(hs[g])}</b></li>`).join("")}</ul></div>`:"")+score(false)+(tv?"":isHost()?`<button class="pri" data-a="again">Jugar otra sesión</button><button data-a="close">Cerrar sala</button>`:`<button data-a="out">Salir de la sala</button>`)}
-function score(c){const sc=room.sc||{},T=team(),l=ps().sort((a,b)=>(sc[b.u]||0)-(sc[a.u]||0));let h=`<div class="box"><h2>Marcador</h2>`;
+function score(c){const sc=room.sc||{},T=team(),l=ps().sort((a,b)=>(sc[b.u]||0)-(sc[a.u]||0));let h=`<div class="box scb"><h2>Marcador</h2>`;
  if(T){const s=room.sct||{},ts=[...Array(room.cfg.teams).keys()].sort((a,b)=>(s[b]||0)-(s[a]||0));
   h+=`<ul class="list">${ts.map(t=>`<li data-k="t${t}">${tdot(t)}<span class="n">Equipo ${tname(t)}${c?"":`<br><small class="muted">${ps().filter(p=>p.t===t).map(p=>(p.e||"")+esc(p.n)+" "+(sc[p.u]||0)).join(" · ")}</small>`}</span><span class="p" data-c="t${t}" data-v="${fmt(s[t])}">${fmt(s[t])}</span></li>`).join("")}</ul>`;
   if(!c&&l.length&&(sc[l[0].u]||0)>0)h+=`<div class="muted">⭐ MVP: ${l[0].e||""} ${esc(l[0].n)} (${sc[l[0].u]})</div>`}
